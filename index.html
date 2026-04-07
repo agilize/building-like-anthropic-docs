@@ -55,27 +55,37 @@
 
     .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
 
-    /* Course CTA */
+    /* Course CTA wrapper — gradient border via mask */
+    .course-cta-wrap {
+      display: inline-block; margin-top: 1.8rem;
+      border-radius: 7px; padding: 1px;
+      background: conic-gradient(
+        from 0deg,
+        #e8937a, #d4a574, #b07eda, #7eb8da, #7ec9a0, #e8937a
+      );
+    }
+    .course-cta-wrap.paused {
+      background: linear-gradient(135deg, #e8937a, #d4a574, #b07eda);
+    }
     .course-cta {
-      display: inline-flex; align-items: center; gap: 0.6rem;
-      margin-top: 1.8rem; padding: 0.5rem 1rem 0.5rem 0.5rem;
-      background: transparent; border: 1px solid var(--border);
-      border-radius: 6px; transition: all 0.25s; color: var(--text-muted);
-      text-decoration: none; font-size: 0.82rem;
+      display: inline-flex; align-items: center; gap: 0.7rem;
+      padding: 0.6rem 1.1rem 0.6rem 0.6rem;
+      background: var(--bg); border: none; border-radius: 6px;
+      color: var(--text-secondary); text-decoration: none; font-size: 0.85rem;
+      transition: background 0.25s, color 0.25s;
     }
-    .course-cta:hover {
-      border-color: #e8937a; color: var(--text-secondary);
-    }
+    .course-cta-wrap:hover .course-cta { color: var(--text); background: rgba(13,13,13,0.92); }
     .course-cta-badge {
-      background: rgba(232, 147, 122, 0.12); color: #e8937a; font-size: 0.65rem;
-      font-weight: 600; letter-spacing: 0.06em;
+      background: rgba(232, 147, 122, 0.15); color: #e8937a; font-size: 0.65rem;
+      font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
       padding: 0.3em 0.6em; border-radius: 4px; flex-shrink: 0;
     }
-    .course-cta-text { font-weight: 400; }
-    .course-cta-arrow {
-      color: #e8937a; opacity: 0; transition: all 0.2s; margin-left: -0.3rem;
+    .course-cta-text { font-weight: 500; }
+    .course-cta-ext {
+      color: #e8937a; opacity: 0.6; font-size: 0.78rem; flex-shrink: 0;
+      transition: opacity 0.2s;
     }
-    .course-cta:hover .course-cta-arrow { opacity: 1; margin-left: 0; }
+    .course-cta:hover .course-cta-ext { opacity: 1; }
 
     /* Hero */
     .hero { padding: 6rem 0 4rem; border-bottom: 1px solid var(--border); }
@@ -363,11 +373,13 @@
       A research-backed deep study on Anthropic's development workflows, agent harness design,
       infrastructure, interpretability research, and AI-first engineering culture &mdash; with 100+ official references.
     </p>
-    <a href="https://cccourses.vercel.app/" target="_blank" class="course-cta">
-      <span class="course-cta-badge">Curso</span>
-      <span class="course-cta-text">Claude Code para Engenheiros &mdash; 29 m&oacute;dulos, 100% pr&aacute;tico</span>
-      <span class="course-cta-arrow">&rarr;</span>
-    </a>
+    <span class="course-cta-wrap" id="ctaWrap">
+      <a href="https://cccourses.vercel.app/" target="_blank" class="course-cta">
+        <span class="course-cta-badge">+ Curso</span>
+        <span class="course-cta-text">Claude Code para Engenheiros &mdash; 29 m&oacute;dulos, 100% pr&aacute;tico</span>
+        <svg class="course-cta-ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    </span>
   </div>
 </header>
 
@@ -1878,6 +1890,31 @@ Markdown instructions here...
     });
   }, { rootMargin: '-20% 0px -80% 0px' });
   sections.forEach(s => observer.observe(s));
+
+  // Animated gradient border for course CTA
+  const ctaWrap = document.getElementById('ctaWrap');
+  if (ctaWrap) {
+    let angle = 0;
+    let spinning = true;
+    let raf;
+    function spin() {
+      if (!spinning) return;
+      angle = (angle + 1.5) % 360;
+      ctaWrap.style.background =
+        `conic-gradient(from ${angle}deg, #e8937a, #d4a574, #b07eda, #7eb8da, #7ec9a0, #e8937a)`;
+      raf = requestAnimationFrame(spin);
+    }
+    spin();
+    ctaWrap.addEventListener('mouseenter', () => {
+      spinning = false;
+      cancelAnimationFrame(raf);
+      ctaWrap.style.background = 'linear-gradient(135deg, #e8937a, #d4a574, #b07eda)';
+    });
+    ctaWrap.addEventListener('mouseleave', () => {
+      spinning = true;
+      spin();
+    });
+  }
 </script>
 
 </body>

@@ -501,22 +501,33 @@
     .hero h1 span { color: var(--accent); }
     .hero-subtitle { font-size: 1.15rem; color: var(--text-secondary); max-width: 680px; line-height: 1.8; }
     .hero-author {
-      margin-top: 1.2rem; font-size: 0.88rem; color: var(--text-muted);
-      display: flex; align-items: center; gap: 0.5rem;
+      margin-top: 1.2rem; font-size: 0.82rem; color: var(--text-muted);
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
     }
     .hero-author a { display: inline-flex; align-items: center; }
-    .agilize-logo { height: 18px; width: auto; display: inline-block; opacity: 0.75; transition: opacity 0.2s; }
-    .agilize-logo-light { height: 18px; width: auto; display: none; opacity: 0.85; transition: opacity 0.2s; }
-    .hero-author a:hover .agilize-logo,
-    .hero-author a:hover .agilize-logo-light,
-    .footer-agilize:hover .agilize-logo,
-    .footer-agilize:hover .agilize-logo-light { opacity: 1; }
-    .footer-agilize { display: inline-flex; align-items: center; vertical-align: middle; }
-    .footer-agilize .agilize-logo,
-    .footer-agilize .agilize-logo-light { height: 14px; }
+    .hero-author-sep { color: var(--text-muted); }
+    /* Agilize logos */
+    .agilize-logo { height: 18px; width: auto; display: inline-block; opacity: 0.7; transition: opacity 0.2s; }
+    .agilize-logo-light { height: 18px; width: auto; display: none; opacity: 0.8; transition: opacity 0.2s; }
+    /* Anthropic logos */
+    .anthropic-logo { height: 16px; width: auto; display: inline-block; opacity: 0.7; transition: opacity 0.2s; }
+    .anthropic-logo-dark { height: 16px; width: auto; display: none; opacity: 0.8; transition: opacity 0.2s; }
+    /* Hover all logos */
+    a:hover .agilize-logo, a:hover .agilize-logo-light,
+    a:hover .anthropic-logo, a:hover .anthropic-logo-dark { opacity: 1; }
+    /* Footer credits */
+    .footer-credits {
+      margin-top: 1rem; color: var(--text-muted); font-size: 0.78rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem; flex-wrap: wrap;
+    }
+    .footer-brand { display: inline-flex; align-items: center; }
+    .footer-brand .agilize-logo, .footer-brand .agilize-logo-light { height: 14px; }
+    .footer-brand .anthropic-logo, .footer-brand .anthropic-logo-dark { height: 13px; }
     /* Light theme: swap logos */
     [data-theme="light"] .agilize-logo { display: none; }
     [data-theme="light"] .agilize-logo-light { display: inline-block; }
+    [data-theme="light"] .anthropic-logo { display: none; }
+    [data-theme="light"] .anthropic-logo-dark { display: inline-block; }
 
     /* Stats bar */
     .stats-bar {
@@ -821,7 +832,13 @@
       A research-backed deep study on Anthropic's development workflows, agent harness design,
       infrastructure, interpretability research, and AI-first engineering culture &mdash; with 100+ official references.
     </p>
-    <p class="hero-author">by <a href="https://agilize.com.br" target="_blank"><img class="agilize-logo" src="assets/logo-branca.png" alt="Agilize"><img class="agilize-logo-light" src="assets/logo-roxa.png" alt="Agilize"></a></p>
+    <p class="hero-author">
+      <span>A study about</span>
+      <a href="https://www.anthropic.com" target="_blank"><img class="anthropic-logo" src="assets/anthropic-logo-white.svg" alt="Anthropic"><img class="anthropic-logo-dark" src="assets/anthropic-logo.svg" alt="Anthropic"></a>
+      <span class="hero-author-sep">&mdash;</span>
+      <span>by</span>
+      <a href="https://agilize.com.br" target="_blank"><img class="agilize-logo" src="assets/logo-branca.png" alt="Agilize"><img class="agilize-logo-light" src="assets/logo-roxa.png" alt="Agilize"></a>
+    </p>
     <span class="course-cta-wrap" id="ctaWrap">
       <a href="https://cccourses.vercel.app/" target="_blank" class="course-cta">
         <span class="course-cta-badge">Curso</span>
@@ -2311,7 +2328,11 @@ Markdown instructions here...
   <div class="container">
     <p>Compiled from official Anthropic publications, 23 engineering blog posts, 23+ arxiv papers, 10 Transformer Circuits publications, 16+ podcasts/articles, 16 documentation pages, 8 Academy courses, and verified journalism.</p>
     <p style="margin-top: 0.5rem;">Primary sources: <a href="https://www.anthropic.com/engineering" target="_blank">anthropic.com/engineering</a> &middot; <a href="https://www.anthropic.com/research" target="_blank">anthropic.com/research</a> &middot; <a href="https://transformer-circuits.pub" target="_blank">transformer-circuits.pub</a> &middot; <a href="https://code.claude.com/docs" target="_blank">code.claude.com/docs</a> &middot; <a href="https://platform.claude.com/docs" target="_blank">platform.claude.com/docs</a></p>
-    <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.78rem;">Compiled by <a href="https://agilize.com.br" target="_blank" class="footer-agilize"><img class="agilize-logo" src="assets/logo-branca.png" alt="Agilize"><img class="agilize-logo-light" src="assets/logo-roxa.png" alt="Agilize"></a></p>
+    <p class="footer-credits">
+      About <a href="https://www.anthropic.com" target="_blank" class="footer-brand"><img class="anthropic-logo" src="assets/anthropic-logo-white.svg" alt="Anthropic"><img class="anthropic-logo-dark" src="assets/anthropic-logo.svg" alt="Anthropic"></a>
+      <span>&mdash;</span>
+      Compiled by <a href="https://agilize.com.br" target="_blank" class="footer-brand"><img class="agilize-logo" src="assets/logo-branca.png" alt="Agilize"><img class="agilize-logo-light" src="assets/logo-roxa.png" alt="Agilize"></a>
+    </p>
     <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.78rem;">Last updated: April 2026. Not affiliated with Anthropic. All sources verifiable at linked URLs.</p>
   </div>
 </footer>

@@ -196,28 +196,243 @@
     .terminal-dots span:nth-child(3) { background: #7ec9a0; }
     .terminal-title { flex: 1; text-align: center; letter-spacing: 0.04em; }
 
-    /* Terminal: CRT scanlines */
+    /* Terminal: CRT scanlines — more visible */
     [data-theme="terminal"] body::after {
       content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px);
       pointer-events: none; z-index: 9999;
     }
-    /* Terminal: subtle glow on headings */
+    /* Terminal: CRT vignette */
+    [data-theme="terminal"] body::before {
+      content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.45) 100%);
+      pointer-events: none; z-index: 9998;
+    }
+    /* Terminal: full-screen rolling interference band */
+    .crt-interference { display: none; }
+    [data-theme="terminal"] .crt-interference {
+      display: block; position: fixed; top: 0; left: 0; right: 0;
+      height: 80px; pointer-events: none; z-index: 9997;
+      background: linear-gradient(180deg, transparent 0%, rgba(232,147,122,0.03) 30%, rgba(126,184,218,0.04) 50%, rgba(232,147,122,0.03) 70%, transparent 100%);
+      animation: roll-band 4s linear infinite;
+    }
+    @keyframes roll-band {
+      0% { top: -80px; }
+      100% { top: 100vh; }
+    }
+    /* Terminal: random horizontal tear */
+    .crt-tear { display: none; }
+    [data-theme="terminal"] .crt-tear {
+      display: block; position: fixed; left: 0; right: 0;
+      height: 2px; pointer-events: none; z-index: 9997;
+      background: rgba(232,147,122,0.12);
+      animation: tear-flash 5s step-end infinite;
+    }
+    @keyframes tear-flash {
+      0%, 100% { top: 30%; opacity: 0; }
+      15% { top: 30%; opacity: 0; }
+      15.5% { top: 30%; opacity: 1; transform: scaleX(1); }
+      16% { top: 30%; opacity: 0; }
+      45% { top: 65%; opacity: 0; }
+      45.5% { top: 65%; opacity: 1; transform: scaleX(0.7); }
+      46% { top: 65%; opacity: 0; }
+      75% { top: 15%; opacity: 0; }
+      75.3% { top: 15%; opacity: 1; transform: scaleX(0.85); }
+      76% { top: 15%; opacity: 0; }
+    }
+
+    /* Terminal: glitch/interference keyframes */
+    @keyframes glitch {
+      0%, 100% { transform: translate(0); }
+      20% { transform: translate(-1px, 1px); }
+      40% { transform: translate(1px, -1px); }
+      60% { transform: translate(-1px, 0); }
+      80% { transform: translate(1px, 0); }
+    }
+    @keyframes glitch-color {
+      0%, 100% { text-shadow: 0 0 20px rgba(232, 147, 122, 0.15); }
+      25% { text-shadow: -2px 0 rgba(126,184,218,0.4), 2px 0 rgba(232,147,122,0.4), 0 0 20px rgba(232,147,122,0.15); }
+      50% { text-shadow: 0 0 20px rgba(232, 147, 122, 0.15); }
+      75% { text-shadow: 1px 0 rgba(126,201,160,0.3), -1px 0 rgba(232,147,122,0.3), 0 0 20px rgba(232,147,122,0.15); }
+    }
+    @keyframes scanline-flash {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+    @keyframes interference {
+      0%, 100% { clip-path: inset(0 0 100% 0); }
+      10% { clip-path: inset(40% 0 30% 0); }
+      15% { clip-path: inset(0 0 100% 0); }
+      50% { clip-path: inset(70% 0 10% 0); }
+      55% { clip-path: inset(0 0 100% 0); }
+      80% { clip-path: inset(20% 0 60% 0); }
+      85% { clip-path: inset(0 0 100% 0); }
+    }
+
+    /* Terminal: sporadic text interference — mostly idle, brief burst */
+    @keyframes glitch-burst {
+      0%, 88%, 100% { transform: none; text-shadow: 0 0 20px rgba(232,147,122,0.15); }
+      89% { transform: translate(-3px, 0); text-shadow: -3px 0 rgba(126,184,218,0.6), 3px 0 rgba(232,147,122,0.6); }
+      90% { transform: translate(3px, 1px) skewX(-2deg); text-shadow: 3px 0 rgba(126,201,160,0.5), -3px 0 rgba(176,126,218,0.5); }
+      91% { transform: translate(-1px, -1px); text-shadow: -2px 0 rgba(232,147,122,0.7), 2px 0 rgba(126,184,218,0.4); }
+      92% { transform: translate(2px, 0) skewX(1deg); text-shadow: 1px 0 rgba(218,200,126,0.5), -1px 0 rgba(232,147,122,0.5); }
+      93% { transform: none; text-shadow: 0 0 20px rgba(232,147,122,0.15); }
+    }
+    /* Terminal: screen flicker */
+    @keyframes screen-flicker {
+      0%, 100% { opacity: 1; }
+      70% { opacity: 1; }
+      70.5% { opacity: 0.92; }
+      71% { opacity: 1; }
+      85% { opacity: 1; }
+      85.3% { opacity: 0.95; }
+      85.6% { opacity: 1; }
+    }
+    [data-theme="terminal"] body { animation: screen-flicker 5s ease-in-out infinite; }
+
+    /* Terminal: RGB split on nav links */
+    [data-theme="terminal"] nav a:hover {
+      text-shadow: -1px 0 rgba(126,184,218,0.5), 1px 0 rgba(232,147,122,0.5);
+    }
+    /* Full-width interference band that sweeps down a section */
+    @keyframes sweep-line {
+      0%, 100% { top: -2px; opacity: 0; }
+      5% { opacity: 1; }
+      30% { top: 100%; opacity: 0.6; }
+      35%, 100% { opacity: 0; }
+    }
+
+    /* Terminal: heading glow + periodic glitch */
     [data-theme="terminal"] h1,
-    [data-theme="terminal"] h2 { text-shadow: 0 0 20px rgba(232, 147, 122, 0.15); }
-    [data-theme="terminal"] .hero h1 span { text-shadow: 0 0 30px rgba(232, 147, 122, 0.25); }
+    [data-theme="terminal"] h2 {
+      text-shadow: 0 0 20px rgba(232, 147, 122, 0.15);
+      animation: glitch-burst 7s ease-in-out infinite;
+    }
+    [data-theme="terminal"] .hero h1 span {
+      text-shadow: 0 0 30px rgba(232, 147, 122, 0.3);
+    }
+
+    /* Terminal: interference line that sweeps across the hero */
+    [data-theme="terminal"] .hero::after {
+      content: ''; position: absolute; left: 0; right: 0;
+      height: 2px; background: rgba(232, 147, 122, 0.15);
+      animation: sweep-line 8s linear infinite;
+      pointer-events: none;
+    }
+    [data-theme="terminal"] .hero { position: relative; overflow: hidden; }
+
+    /* Terminal: staggered glitch on section headers at different intervals */
+    [data-theme="terminal"] .section-header h2 {
+      position: relative;
+      animation: glitch-burst 9s ease-in-out infinite;
+    }
+    [data-theme="terminal"] section:nth-child(odd) .section-header h2 { animation-delay: -3s; }
+    [data-theme="terminal"] section:nth-child(3n) .section-header h2 { animation-duration: 11s; animation-delay: -5s; }
+    [data-theme="terminal"] section:nth-child(4n) .section-header h2 { animation-duration: 7s; animation-delay: -1s; }
+
+    /* Terminal: glitch on hover (section headers) */
+    [data-theme="terminal"] .section-header h2:hover {
+      animation: glitch 0.3s ease-in-out;
+    }
+
+    /* Terminal: stat values glitch at staggered times */
+    [data-theme="terminal"] .stat-value {
+      animation: glitch-burst 6s ease-in-out infinite;
+    }
+    [data-theme="terminal"] .stat:nth-child(2) .stat-value { animation-delay: -1.5s; }
+    [data-theme="terminal"] .stat:nth-child(3) .stat-value { animation-delay: -3s; }
+    [data-theme="terminal"] .stat:nth-child(4) .stat-value { animation-delay: -4s; }
+    [data-theme="terminal"] .stat:nth-child(5) .stat-value { animation-delay: -0.8s; }
+    [data-theme="terminal"] .stat:nth-child(6) .stat-value { animation-delay: -2.5s; }
+
+    /* Terminal: interference sweep on cards (staggered per section) */
+    [data-theme="terminal"] .card {
+      position: relative; overflow: hidden;
+    }
+    [data-theme="terminal"] .card::after {
+      content: ''; position: absolute; left: 0; right: 0;
+      height: 1px; background: rgba(232,147,122,0.1);
+      animation: sweep-line 12s linear infinite;
+      pointer-events: none;
+    }
+    [data-theme="terminal"] .card:nth-child(odd)::after { animation-delay: -4s; }
+    [data-theme="terminal"] .card:nth-child(3n)::after { animation-delay: -8s; animation-duration: 15s; }
+
+    /* Terminal: quote text interference */
+    [data-theme="terminal"] .quote p {
+      animation: glitch-burst 12s ease-in-out infinite;
+    }
+
+    /* Terminal: timeline phase labels */
+    [data-theme="terminal"] .timeline-phase {
+      animation: glitch-burst 10s ease-in-out infinite;
+    }
+
+    /* Terminal: accordion summary text */
+    [data-theme="terminal"] summary {
+      animation: glitch-burst 14s ease-in-out infinite;
+    }
+    [data-theme="terminal"] details:nth-child(odd) summary { animation-delay: -5s; }
+    [data-theme="terminal"] details:nth-child(3n) summary { animation-delay: -9s; }
+
+    /* Terminal: harness diagram sweep */
+    [data-theme="terminal"] .harness-diagram {
+      position: relative; overflow: hidden;
+    }
+    [data-theme="terminal"] .harness-diagram::after {
+      content: ''; position: absolute; left: 0; right: 0;
+      height: 2px; background: rgba(126,184,218,0.15);
+      animation: sweep-line 8s linear infinite;
+      pointer-events: none;
+    }
+    /* Terminal: section dividers glitch */
+    [data-theme="terminal"] section {
+      position: relative; overflow: hidden;
+    }
+    [data-theme="terminal"] section::after {
+      content: ''; position: absolute; left: 0; right: 0;
+      height: 1px; background: rgba(232,147,122,0.08);
+      animation: sweep-line 15s linear infinite;
+      pointer-events: none;
+    }
+    [data-theme="terminal"] section:nth-child(even)::after { animation-delay: -7s; animation-duration: 12s; }
+    [data-theme="terminal"] section:nth-child(3n)::after { animation-delay: -3s; animation-duration: 18s; }
+    /* Terminal: principle numbers glitch */
+    [data-theme="terminal"] .principle-num {
+      animation: glitch-burst 8s ease-in-out infinite;
+    }
+    [data-theme="terminal"] .principle:nth-child(odd) .principle-num { animation-delay: -3s; }
+    /* Terminal: tag badges brief interference */
+    [data-theme="terminal"] .tag {
+      animation: glitch-burst 15s ease-in-out infinite;
+    }
+    /* Terminal: table rows flicker on hover */
+    [data-theme="terminal"] .ref-table tr:hover td {
+      text-shadow: -1px 0 rgba(126,184,218,0.3), 1px 0 rgba(232,147,122,0.3);
+    }
+    /* Terminal: workflow arrows pulse */
+    [data-theme="terminal"] .workflow-arrow {
+      animation: glitch-burst 6s ease-in-out infinite;
+      color: var(--accent-dim);
+    }
+
     /* Terminal: section header prefix */
     [data-theme="terminal"] .section-header h4::before { content: '$ ./'; color: var(--accent); }
     /* Terminal: prompt style for checklist */
     [data-theme="terminal"] .checklist li::before { content: '$'; }
-    /* Terminal: card corner */
+    /* Terminal: card corner + subtle glow on hover */
     [data-theme="terminal"] .card::before {
       content: '\250C\2500'; position: absolute; top: 0.4rem; left: 0.6rem;
       color: var(--border-hover); font-size: 0.7rem;
     }
     [data-theme="terminal"] .card { position: relative; }
+    [data-theme="terminal"] .card:hover {
+      box-shadow: 0 0 15px rgba(232, 147, 122, 0.06);
+    }
     /* Terminal: quote prefix */
     [data-theme="terminal"] .quote p::before { content: '// '; color: var(--accent-dim); font-style: normal; }
+    /* Terminal: quote left border glow */
+    [data-theme="terminal"] .quote { border-left-color: var(--accent); box-shadow: -2px 0 8px rgba(232,147,122,0.1); }
     /* Terminal: accordion markers */
     [data-theme="terminal"] summary::before { content: '[+]' !important; font-size: 0.82rem !important; }
     [data-theme="terminal"] details[open] summary::before { content: '[-]' !important; }
@@ -558,6 +773,10 @@
   </style>
 </head>
 <body>
+
+<!-- CRT effects (visible only in terminal theme) -->
+<div class="crt-interference"></div>
+<div class="crt-tear"></div>
 
 <!-- Terminal bar (visible only in terminal theme) -->
 <div class="terminal-bar">

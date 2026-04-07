@@ -436,11 +436,10 @@
     /* Terminal: accordion markers */
     [data-theme="terminal"] summary::before { content: '[+]' !important; font-size: 0.82rem !important; }
     [data-theme="terminal"] details[open] summary::before { content: '[-]' !important; }
-    /* Terminal: blinking cursor on hero */
-    [data-theme="terminal"] .hero h1 .cursor {
+    /* Blinking cursor on hero — all themes */
+    .hero h1 .cursor {
       display: inline; color: var(--accent); animation: blink 1s step-end infinite; font-weight: 400;
     }
-    .hero h1 .cursor { display: none; }
     /* Terminal: footer EOF */
     [data-theme="terminal"] footer::before {
       content: '// EOF'; display: block; color: var(--accent-dim);
@@ -2358,11 +2357,7 @@ Markdown instructions here...
       const el = document.querySelector('.hero-word');
       const words = ['Software', 'Agents', 'the Future', 'with Claude', 'Software'];
       let wi = 0, ci = words[0].length, erasing = true, paused = false;
-      function isTerminal() {
-        return document.documentElement.getAttribute('data-theme') === 'terminal';
-      }
       function tick() {
-        if (!isTerminal()) { el.textContent = 'Software'; setTimeout(tick, 500); return; }
         const word = words[wi];
         if (paused) { paused = false; erasing = true; setTimeout(tick, 80); return; }
         if (erasing) {

@@ -78,18 +78,44 @@
     /* Navigation */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(13, 13, 13, 0.85); backdrop-filter: blur(12px);
+      background: rgba(13, 13, 13, 0.95); backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
+      padding: 0.65rem 0;
     }
-    nav .container { display: flex; overflow-x: auto; scrollbar-width: none; gap: 0; }
-    nav .container::-webkit-scrollbar { display: none; }
+    nav .container {
+      text-align: center;
+    }
     nav a {
-      flex-shrink: 0; padding: 1rem 1.1rem; font-size: 0.78rem;
-      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;
-      font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.5rem 0.85rem; font-size: 0.82rem;
+      color: var(--text-secondary); letter-spacing: 0.01em;
+      font-weight: 500; border-radius: 5px; transition: all 0.2s;
+      white-space: nowrap;
     }
-    nav a:hover { color: var(--text); border-bottom-color: var(--border-hover); }
-    nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+    nav a .nav-num {
+      font-family: 'JetBrains Mono', 'SF Mono', monospace;
+      font-size: 0.65rem; font-weight: 700;
+      color: var(--accent-dim); opacity: 0.7;
+      min-width: 1.1em; text-align: right;
+    }
+    nav a:hover { color: var(--text); background: var(--surface-3); }
+    nav a:hover .nav-num { opacity: 1; }
+    nav a.active { color: var(--accent); background: rgba(212, 165, 116, 0.13); }
+    nav a.active .nav-num { color: var(--accent); opacity: 1; }
+
+    /* Mobile nav toggle */
+    .nav-toggle { display: none; }
+    .nav-toggle-label {
+      display: none; cursor: pointer; padding: 0.75rem 1rem;
+      color: var(--text); font-size: 0.85rem; font-weight: 600;
+      letter-spacing: 0.04em; width: 100%; text-align: center;
+      transition: color 0.2s;
+    }
+    .nav-toggle-label::after {
+      content: ' \25BE'; font-size: 0.75rem; color: var(--accent-dim);
+    }
+    .nav-toggle:checked ~ .nav-toggle-label::after { content: ' \25B4'; }
+    .nav-toggle:checked ~ .nav-links { max-height: 500px; opacity: 1; padding: 0.5rem 0; }
 
     /* Sections */
     section { padding: 4rem 0; border-bottom: 1px solid var(--border); }
@@ -263,14 +289,41 @@
       h1 { font-size: 2rem; }
       h2 { font-size: 1.4rem; }
       .container { padding: 0 1.2rem; }
-      .hero { padding: 4rem 0 3rem; }
+      .hero { padding: 3rem 0 2rem; }
+      .hero-subtitle { font-size: 1rem; }
       .two-col, .three-col { grid-template-columns: 1fr; }
       .card-grid { grid-template-columns: 1fr; }
-      .stats-bar { grid-template-columns: repeat(2, 1fr); }
-      section { padding: 3rem 0; }
-      nav a { padding: 0.8rem 0.8rem; font-size: 0.72rem; }
+      .stats-bar { grid-template-columns: repeat(3, 1fr); }
+      section { padding: 2.5rem 0; }
+      .section-header { margin-bottom: 1.5rem; }
+      .harness-diagram { padding: 1.2rem; font-size: 0.75rem; }
+      .principle { grid-template-columns: 2.5rem 1fr; gap: 0.8rem; }
+      .principle-num { width: 2.5rem; height: 2.5rem; font-size: 0.9rem; }
+      .workflow { gap: 0.3rem; }
+      .workflow-step { padding: 0.4rem 0.8rem; font-size: 0.78rem; }
+      .ref-table { font-size: 0.85rem; }
+      .ref-table td, .ref-table th { padding: 0.6rem 0.5rem; }
+
+      /* Mobile nav: collapsible */
+      .nav-toggle-label { display: block; }
+      nav .container { flex-direction: column; align-items: stretch; }
+      .nav-links {
+        display: flex; flex-wrap: wrap; justify-content: center; gap: 0.2rem;
+        max-height: 0; overflow: hidden; opacity: 0;
+        transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+      }
+      nav a { padding: 0.5rem 0.6rem; font-size: 0.7rem; }
     }
-    @media (max-width: 480px) { .stats-bar { grid-template-columns: 1fr; } }
+    @media (max-width: 480px) {
+      h1 { font-size: 1.6rem; }
+      h2 { font-size: 1.2rem; }
+      .container { padding: 0 1rem; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      .stat { padding: 1rem; }
+      .stat-value { font-size: 1.5rem; }
+      .card { padding: 1.2rem; }
+      .quote { padding: 0.8rem 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -304,22 +357,26 @@
 <!-- Navigation -->
 <nav>
   <div class="container">
-    <a href="#philosophy">Philosophy</a>
-    <a href="#stack">Stack</a>
-    <a href="#workflows">Workflows</a>
-    <a href="#harnesses">Harnesses</a>
-    <a href="#claudemd">CLAUDE.md</a>
-    <a href="#boris">Boris's Setup</a>
-    <a href="#context">Context Eng.</a>
-    <a href="#evals">Evals</a>
-    <a href="#teams">Teams</a>
-    <a href="#sdk">SDK & Agents</a>
-    <a href="#mcp">MCP</a>
-    <a href="#safety">Safety</a>
-    <a href="#infra">Infra</a>
-    <a href="#timeline">Timeline</a>
-    <a href="#academy">Academy</a>
-    <a href="#references">References</a>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle">
+    <label for="nav-toggle" class="nav-toggle-label">Navigate 16 Sections</label>
+    <div class="nav-links">
+      <a href="#philosophy"><span class="nav-num">01</span> Philosophy</a>
+      <a href="#stack"><span class="nav-num">02</span> Stack</a>
+      <a href="#workflows"><span class="nav-num">03</span> Workflows</a>
+      <a href="#harnesses"><span class="nav-num">04</span> Harnesses</a>
+      <a href="#claudemd"><span class="nav-num">05</span> CLAUDE.md</a>
+      <a href="#boris"><span class="nav-num">06</span> Boris's Setup</a>
+      <a href="#context"><span class="nav-num">07</span> Context Eng.</a>
+      <a href="#evals"><span class="nav-num">08</span> Evals</a>
+      <a href="#teams"><span class="nav-num">09</span> Teams</a>
+      <a href="#sdk"><span class="nav-num">10</span> SDK & Agents</a>
+      <a href="#mcp"><span class="nav-num">11</span> MCP</a>
+      <a href="#safety"><span class="nav-num">12</span> Safety</a>
+      <a href="#infra"><span class="nav-num">13</span> Infra</a>
+      <a href="#timeline"><span class="nav-num">14</span> Timeline</a>
+      <a href="#academy"><span class="nav-num">15</span> Academy</a>
+      <a href="#references"><span class="nav-num">16</span> References</a>
+    </div>
   </div>
 </nav>
 
@@ -1769,11 +1826,15 @@ Markdown instructions here...
 </footer>
 
 <script>
+  const navToggle = document.getElementById('nav-toggle');
   document.querySelectorAll('nav a').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
       const target = document.querySelector(link.getAttribute('href'));
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (navToggle) navToggle.checked = false;
+      }
     });
   });
   const sections = document.querySelectorAll('section[id]');

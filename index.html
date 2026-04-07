@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How Anthropic Engineers Build Software — A Deep Study Guide</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface-2: #1e1e1e;
+      --surface-3: #262626;
+      --border: #2a2a2a;
+      --border-hover: #3a3a3a;
+      --text: #e8e8e8;
+      --text-secondary: #a0a0a0;
+      --text-muted: #6b6b6b;
+      --accent: #d4a574;
+      --accent-dim: #a07850;
+      --accent-glow: rgba(212, 165, 116, 0.08);
+      --blue: #7eb8da;
+      --green: #7ec9a0;
+      --red: #da7e7e;
+      --purple: #b07eda;
+      --yellow: #dac87e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.02em; }
+    h1 { font-size: 2.8rem; line-height: 1.15; }
+    h2 { font-size: 1.8rem; line-height: 1.3; }
+    h3 { font-size: 1.25rem; line-height: 1.4; }
+    h4 { font-size: 1rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+
+    a { color: var(--accent); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--text); }
+
+    code {
+      font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.88em;
+      background: var(--surface-3);
+      padding: 0.15em 0.45em;
+      border-radius: 4px;
+      color: var(--accent);
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+    /* Hero */
+    .hero { padding: 6rem 0 4rem; border-bottom: 1px solid var(--border); }
+    .hero-eyebrow {
+      font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--accent); margin-bottom: 1.5rem; font-weight: 500;
+    }
+    .hero h1 { margin-bottom: 1.5rem; }
+    .hero h1 span { color: var(--accent); }
+    .hero-subtitle { font-size: 1.15rem; color: var(--text-secondary); max-width: 680px; line-height: 1.8; }
+
+    /* Stats bar */
+    .stats-bar {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden; margin: 3rem 0;
+    }
+    .stat { background: var(--surface); padding: 1.5rem; text-align: center; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: var(--accent); letter-spacing: -0.03em; }
+    .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.3rem; }
+
+    /* Navigation */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13, 13, 13, 0.85); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    nav .container { display: flex; overflow-x: auto; scrollbar-width: none; gap: 0; }
+    nav .container::-webkit-scrollbar { display: none; }
+    nav a {
+      flex-shrink: 0; padding: 1rem 1.1rem; font-size: 0.78rem;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;
+      font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    nav a:hover { color: var(--text); border-bottom-color: var(--border-hover); }
+    nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* Sections */
+    section { padding: 4rem 0; border-bottom: 1px solid var(--border); }
+    section:last-child { border-bottom: none; }
+    .section-header { margin-bottom: 2.5rem; }
+    .section-header h4 { margin-bottom: 0.5rem; }
+    .section-header p { color: var(--text-secondary); max-width: 640px; }
+
+    /* Cards */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.8rem; transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border-hover); }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+    .card h3 { margin-bottom: 0.8rem; }
+    .card p { color: var(--text-secondary); font-size: 0.95rem; }
+
+    /* Tags */
+    .tag {
+      display: inline-block; font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.08em; padding: 0.25em 0.7em; border-radius: 3px;
+      font-weight: 600; margin-bottom: 0.8rem;
+    }
+    .tag-blue { background: rgba(126,184,218,0.12); color: var(--blue); }
+    .tag-green { background: rgba(126,201,160,0.12); color: var(--green); }
+    .tag-red { background: rgba(218,126,126,0.12); color: var(--red); }
+    .tag-purple { background: rgba(176,126,218,0.12); color: var(--purple); }
+    .tag-yellow { background: rgba(218,200,126,0.12); color: var(--yellow); }
+    .tag-accent { background: var(--accent-glow); color: var(--accent); }
+
+    /* Quote */
+    .quote {
+      border-left: 2px solid var(--accent-dim); padding: 1rem 1.5rem;
+      margin: 1.2rem 0; background: var(--accent-glow); border-radius: 0 6px 6px 0;
+    }
+    .quote p { color: var(--text-secondary); font-style: italic; font-size: 0.95rem; }
+    .quote cite { display: block; font-size: 0.8rem; color: var(--text-muted); font-style: normal; margin-top: 0.5rem; }
+
+    /* Timeline */
+    .timeline { position: relative; padding-left: 2.5rem; }
+    .timeline::before {
+      content: ''; position: absolute; left: 0.45rem; top: 0.5rem; bottom: 0.5rem;
+      width: 1px; background: var(--border);
+    }
+    .timeline-item { position: relative; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+    .timeline-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: -2.05rem; top: 0.55rem;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--accent-dim); border: 2px solid var(--bg);
+    }
+    .timeline-phase {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--accent); font-weight: 600; margin-bottom: 0.3rem;
+    }
+    .timeline-item h3 { margin-bottom: 0.5rem; }
+    .timeline-item p { color: var(--text-secondary); font-size: 0.95rem; }
+
+    /* Principles */
+    .principle {
+      display: grid; grid-template-columns: 3.5rem 1fr; gap: 1.2rem;
+      align-items: start; padding: 1.5rem 0; border-bottom: 1px solid var(--border);
+    }
+    .principle:last-child { border-bottom: none; }
+    .principle-num {
+      width: 3.2rem; height: 3.2rem; display: flex; align-items: center;
+      justify-content: center; border-radius: 8px; background: var(--surface-2);
+      border: 1px solid var(--border); font-size: 1.1rem; font-weight: 700; color: var(--accent);
+    }
+    .principle h3 { margin-bottom: 0.3rem; }
+    .principle p { color: var(--text-secondary); font-size: 0.93rem; }
+
+    /* Workflow */
+    .workflow { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 1.5rem 0; }
+    .workflow-step {
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 0.6rem 1.2rem; border-radius: 6px; font-size: 0.85rem;
+      font-weight: 500; white-space: nowrap;
+    }
+    .workflow-arrow { color: var(--text-muted); font-size: 1.2rem; }
+
+    /* Table */
+    .ref-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .ref-table th {
+      text-align: left; font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-muted); padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--border); font-weight: 500;
+    }
+    .ref-table td {
+      padding: 0.9rem 1rem; border-bottom: 1px solid var(--border);
+      font-size: 0.93rem; color: var(--text-secondary); vertical-align: top;
+    }
+    .ref-table tr:last-child td { border-bottom: none; }
+    .ref-table tr:hover td { background: var(--surface); }
+
+    /* Harness diagram */
+    .harness-diagram {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 2rem; margin: 1.5rem 0; font-family: 'JetBrains Mono', 'SF Mono', monospace;
+      font-size: 0.82rem; color: var(--text-secondary); line-height: 1.8; overflow-x: auto;
+    }
+    .harness-diagram .hl { color: var(--accent); font-weight: 600; }
+    .harness-diagram .dim { color: var(--text-muted); }
+    .harness-diagram .blue { color: var(--blue); }
+    .harness-diagram .green { color: var(--green); }
+    .harness-diagram .purple { color: var(--purple); }
+
+    /* Checklist */
+    .checklist { list-style: none; padding: 0; }
+    .checklist li {
+      padding: 0.6rem 0; padding-left: 1.8rem; position: relative;
+      color: var(--text-secondary); font-size: 0.95rem; border-bottom: 1px solid var(--border);
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist li::before {
+      content: '>'; position: absolute; left: 0; color: var(--accent-dim);
+      font-family: 'JetBrains Mono', monospace; font-weight: 700;
+    }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+    /* Accordion */
+    details {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; margin-bottom: 0.5rem; transition: border-color 0.2s;
+    }
+    details:hover { border-color: var(--border-hover); }
+    details[open] { border-color: var(--accent-dim); }
+    summary {
+      padding: 1.2rem 1.5rem; cursor: pointer; font-weight: 600; font-size: 1rem;
+      list-style: none; display: flex; align-items: center; gap: 0.8rem;
+    }
+    summary::before {
+      content: '+'; font-family: 'JetBrains Mono', monospace; color: var(--accent-dim);
+      font-size: 1.1rem; width: 1.5rem; flex-shrink: 0; transition: transform 0.2s;
+    }
+    details[open] summary::before { content: '-'; }
+    summary::-webkit-details-marker { display: none; }
+    details .detail-content { padding: 0 1.5rem 1.5rem 3.3rem; }
+    details .detail-content p { color: var(--text-secondary); font-size: 0.93rem; margin-bottom: 0.8rem; }
+    details .detail-content p:last-child { margin-bottom: 0; }
+
+    .badge-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .badge {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 0.2em 0.6em; border-radius: 3px; font-weight: 600;
+      background: var(--surface-3); color: var(--text-muted);
+    }
+
+    /* Subsection spacing */
+    .subsection { margin-top: 2.5rem; }
+    .subsection h3 { margin-bottom: 1rem; }
+
+    /* Compact list */
+    .compact-list { list-style: none; padding: 0; }
+    .compact-list li {
+      padding: 0.5rem 0; border-bottom: 1px solid var(--border);
+      font-size: 0.93rem; color: var(--text-secondary);
+    }
+    .compact-list li:last-child { border-bottom: none; }
+    .compact-list li strong { color: var(--text); }
+
+    footer {
+      padding: 3rem 0; text-align: center; color: var(--text-muted); font-size: 0.85rem;
+    }
+    footer a { color: var(--text-secondary); }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1.4rem; }
+      .container { padding: 0 1.2rem; }
+      .hero { padding: 4rem 0 3rem; }
+      .two-col, .three-col { grid-template-columns: 1fr; }
+      .card-grid { grid-template-columns: 1fr; }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+      section { padding: 3rem 0; }
+      nav a { padding: 0.8rem 0.8rem; font-size: 0.72rem; }
+    }
+    @media (max-width: 480px) { .stats-bar { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- HERO -->
+<!-- ============================================================ -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">Deep Study Guide / April 2026</div>
+    <h1>How Anthropic Engineers<br><span>Build Software</span></h1>
+    <p class="hero-subtitle">
+      A research-backed deep study on Anthropic's development workflows, agent harness design,
+      infrastructure, interpretability research, and AI-first engineering culture &mdash; with 100+ official references.
+    </p>
+  </div>
+</header>
+
+<!-- Stats -->
+<div class="container">
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-value">90%</div><div class="stat-label">Code by Claude</div></div>
+    <div class="stat"><div class="stat-value">59%</div><div class="stat-label">Daily work uses AI</div></div>
+    <div class="stat"><div class="stat-value">67%</div><div class="stat-label">More PRs/engineer</div></div>
+    <div class="stat"><div class="stat-value">5-30</div><div class="stat-label">PRs shipped/day</div></div>
+    <div class="stat"><div class="stat-value">74</div><div class="stat-label">Releases in 52 days</div></div>
+    <div class="stat"><div class="stat-value">200%</div><div class="stat-label">Productivity gain</div></div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<nav>
+  <div class="container">
+    <a href="#philosophy">Philosophy</a>
+    <a href="#stack">Stack</a>
+    <a href="#workflows">Workflows</a>
+    <a href="#harnesses">Harnesses</a>
+    <a href="#claudemd">CLAUDE.md</a>
+    <a href="#boris">Boris's Setup</a>
+    <a href="#context">Context Eng.</a>
+    <a href="#evals">Evals</a>
+    <a href="#teams">Teams</a>
+    <a href="#sdk">SDK & Agents</a>
+    <a href="#mcp">MCP</a>
+    <a href="#safety">Safety</a>
+    <a href="#infra">Infra</a>
+    <a href="#timeline">Timeline</a>
+    <a href="#academy">Academy</a>
+    <a href="#references">References</a>
+  </div>
+</nav>
+
+<!-- ============================================================ -->
+<!-- 01 PHILOSOPHY -->
+<!-- ============================================================ -->
+<section id="philosophy">
+  <div class="container">
+    <div class="section-header">
+      <h4>01 &mdash; Core Philosophy</h4>
+      <h2>Design Principles Behind Anthropic's Engineering</h2>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">1</div>
+      <div>
+        <h3>Do The Simple Thing First</h3>
+        <p>Context compaction is just asking Claude to summarize previous messages. The CLAUDE.md memory system is "the simplest thing that could work &mdash; it's a file that has some stuff." They abandoned vector-based RAG search (with Voyage embeddings) in favor of agentic search using <code>grep</code> and <code>glob</code>, which outperformed RAG "by a lot." Boris Cherny created ~20 distinct prototypes in two days for the todo list feature alone, preferring rapid iteration over upfront architecture.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">2</div>
+      <div>
+        <h3>Minimal Scaffolding, Maximum Model</h3>
+        <p>The SWE-bench agent that scored 49% uses only two tools: a Bash tool (persistent state, no internet) and an Edit tool (str_replace, view, create, insert, undo). No framework. No RAG. No planning module. The team actively removes tools &mdash; they unshipped <code>ls</code> once bash enforcement was robust. Cat Wu: <strong>"Everything you can do, Claude can do. There's nothing in between."</strong> The foundational paper states: "Start by using LLM APIs directly: many patterns can be implemented in a few lines of code."</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">3</div>
+      <div>
+        <h3>Tool Design Over Prompt Engineering</h3>
+        <p>From the SWE-bench work: <strong>"Much more attention should go into designing tool interfaces for models."</strong> The team spent more time optimizing tool interfaces than the overall prompt. Tools are the contract between human intent and model capability. This is why Claude Code's <code>Edit</code> tool enforces exact string matching (not line numbers) and the <code>Bash</code> tool maintains persistent state &mdash; each design choice encodes an assumption about reliable model interaction.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">4</div>
+      <div>
+        <h3>Separate Generation From Evaluation</h3>
+        <p>From harness design research: <strong>"Agents tend to respond by confidently praising the work &mdash; even when, to a human observer, the quality is obviously mediocre."</strong> Never let the same agent generate and evaluate its own work. The three-agent harness (Planner, Generator, Evaluator) exists specifically for this reason. The Evaluator actively runs the application, not just reads the code.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">5</div>
+      <div>
+        <h3>Underfund Teams, Unlimited Tokens</h3>
+        <p>Boris Cherny advocates providing small teams with unlimited API access rather than large headcount. Claude Code started with one engineer (Boris), grew to ~10. The team ships 60-100 internal npm releases per day. This forces prioritization: the model does the heavy lifting, humans guide direction. Individual engineers average 5 PRs/day; Boris routinely ships 10-30 PRs/day.</p>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-num">6</div>
+      <div>
+        <h3>Every Component Encodes an Assumption</h3>
+        <p>From "Harness design for long-running application development": <strong>"Every component in a harness encodes an assumption about what the model can't do on its own."</strong> If the model can do it, remove the component. If it can't, make the harness handle it. This is why harness design evolves with model capabilities &mdash; what required scaffolding with Claude 3 may be unnecessary with Claude 4.</p>
+      </div>
+    </div>
+
+    <div class="quote">
+      <p>"Maybe you don't actually need an IDE."</p>
+      <cite>&mdash; Boris Cherny, Head of Claude Code</cite>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 02 TECH STACK -->
+<!-- ============================================================ -->
+<section id="stack">
+  <div class="container">
+    <div class="section-header">
+      <h4>02 &mdash; Tech Stack</h4>
+      <h2>How Claude Code Is Built</h2>
+      <p>Technology choices reflect the "model writes the code" philosophy. Pick technologies the model knows best.</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <span class="tag tag-blue">Language</span>
+        <h3>TypeScript</h3>
+        <p>"TypeScript and React are two technologies the model is very capable with, so were a logical choice." ~90% of the codebase is AI-authored. Boris hasn't edited a line by hand since November 2025.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-green">UI Framework</span>
+        <h3>React + Ink + Yoga</h3>
+        <p>Terminal UI via React components with the <a href="https://github.com/vadimdemedes/ink" target="_blank">Ink</a> framework, translating React to ANSI escape codes. Meta's <a href="https://github.com/nicklockwood/layout" target="_blank">Yoga</a> engine handles constraint-based terminal layouts. No Electron or browser dependency.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-purple">Build & Distribution</span>
+        <h3>Bun + npm</h3>
+        <p>Bun for building/bundling. npm for distribution. 60-100 internal npm releases per day. ~1 external release per day. 74 public releases in 52 days (Feb 1 &ndash; Mar 24, 2026). Four teams ship in parallel independently.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-yellow">CLI Framework</span>
+        <h3>CommanderJS</h3>
+        <p>Minimal, standard CLI handling. The tool avoids heavy abstractions. When given bash access, Claude naturally gravitates toward command-line tools rather than custom abstractions.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-red">Agent Core: 2 Tools</span>
+        <h3>Bash + Edit</h3>
+        <p>The SWE-bench agent (49% score) uses only: <strong>Bash</strong> (executes commands, persistent state across calls, no internet) and <strong>Edit</strong> (str_replace with exact string matching, enforced absolute paths, undo_edit). The model determines step sequencing freely.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-accent">Remote Dev</span>
+        <h3>Coder Control Plane</h3>
+        <p>Anthropic uses <a href="https://coder.com" target="_blank">Coder</a> for remote dev environments. Jacqueline Lee (MTS): "I have been focusing on remote development, majorly leveraging Coder as the control plane." Agents run in background &mdash; close your laptop and work continues.</p>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Origin Story</h3>
+      <p style="color: var(--text-secondary);">Claude Code originated from a command-line tool Boris Cherny built to state what music an engineer was listening to. After giving it filesystem access, it "spread like wildfire at Anthropic." Boris joined Anthropic in September 2024 and began prototyping with Claude 3.6. He created the first working prototype in days. Sid Bidasaria joined as engineer #2. The team grew to ~10 engineers, now includes PMs, designers, data scientists. An Anthropic spokesperson clarified: company-wide, between 70% and 90% of code is AI-authored.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 03 WORKFLOWS -->
+<!-- ============================================================ -->
+<section id="workflows">
+  <div class="container">
+    <div class="section-header">
+      <h4>03 &mdash; Development Workflows</h4>
+      <h2>The AI-First Development Loop</h2>
+      <p>Anthropic engineers have converged on several distinct workflow patterns, each suited to different task types.</p>
+    </div>
+
+    <!-- Autonomous Loop -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <span class="tag tag-green">Primary Workflow</span>
+      <h3>The Autonomous Loop (Shift+Tab / Auto-Accept Mode)</h3>
+      <div class="workflow">
+        <span class="workflow-step">Clean git state</span>
+        <span class="workflow-arrow">&rarr;</span>
+        <span class="workflow-step">Prompt Claude</span>
+        <span class="workflow-arrow">&rarr;</span>
+        <span class="workflow-step">Shift+Tab auto-accept</span>
+        <span class="workflow-arrow">&rarr;</span>
+        <span class="workflow-step">Claude writes + tests + iterates</span>
+        <span class="workflow-arrow">&rarr;</span>
+        <span class="workflow-step">Review ~80%</span>
+        <span class="workflow-arrow">&rarr;</span>
+        <span class="workflow-step">Human refines 20%</span>
+        <span class="workflow-arrow">&rarr;</span>
+        <span class="workflow-step">Commit</span>
+      </div>
+      <p>The Product Development team uses auto-accept mode where Claude writes code, runs tests, and iterates autonomously. Claude verifies its own work by running builds, tests, and lints. The engineer reviews the ~80% complete solution. ~70% of final implementation comes from Claude's autonomous work. <strong>Critical:</strong> always start from a clean git state and commit checkpoints regularly so you can roll back.</p>
+      <p style="margin-top: 0.8rem;"><strong>Task classification intuition:</strong> peripheral features run async (let Claude go fully autonomous), core business logic runs synchronous (human stays in the loop). Developing this intuition is key to the workflow.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <span class="tag tag-blue">High Volume</span>
+        <h3>The Slot Machine</h3>
+        <p>Used by Data Science and ML Engineering. Commit state, let Claude run 30 minutes, accept or restart fresh. Starting over often has higher success rate than debugging a broken attempt. Build permanent React dashboards (5,000+ lines of TypeScript) instead of throwaway Jupyter notebooks &mdash; despite "knowing very little JavaScript."</p>
+        <div class="quote">
+          <p>"Treat it like a slot machine &mdash; starting over often has higher success rate than fixing."</p>
+          <cite>&mdash; Anthropic Data Science Team</cite>
+        </div>
+      </div>
+      <div class="card">
+        <span class="tag tag-purple">Methodical</span>
+        <h3>TDD with Claude</h3>
+        <p>Used by Security Engineering. Write pseudocode first, guide Claude through test-driven development. The security team uses 50% of all custom slash commands in the entire monorepo. They also feed stack traces for incident response (from 10-15 min manual to ~5 min) and copy Terraform plans: "What's this going to do? Am I going to regret this?"</p>
+        <div class="quote">
+          <p>"Let Claude talk first. Tell it to commit as it goes."</p>
+          <cite>&mdash; Anthropic Security Team</cite>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 1.5rem;">
+      <span class="tag tag-yellow">One-shot First</span>
+      <h3>Try and Rollback</h3>
+      <p>Used by RL Engineering. Quick prompt, let Claude attempt full implementation. Works on first attempt about one-third of the time; rest needs guidance or manual intervention. Frequent git checkpointing is essential. The key insight: always try the one-shot approach first before investing in complex prompting &mdash; you'd be surprised how often it works.</p>
+    </div>
+
+    <!-- Five Agent Patterns -->
+    <div class="subsection">
+      <h3>The Five Agent Workflow Patterns (from "Building Effective Agents")</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 1.2rem;">The foundational paper distinguishes <strong>workflows</strong> (predefined code paths with LLMs) from <strong>agents</strong> (LLMs dynamically directing processes). Five workflow patterns form the building blocks:</p>
+      <div class="card-grid">
+        <div class="card">
+          <span class="tag tag-blue">Pattern 1</span>
+          <h3>Prompt Chaining</h3>
+          <p>Sequential LLM calls where each step processes the previous output. Each link has its own validation gate. Best for tasks decomposable into fixed subtasks. Example: generate code &rarr; review code &rarr; fix issues.</p>
+        </div>
+        <div class="card">
+          <span class="tag tag-green">Pattern 2</span>
+          <h3>Routing</h3>
+          <p>Classify input and direct to specialized handlers. The LLM acts as a dispatcher. Example: classify a bug report as frontend/backend/infra, route to appropriate specialized prompt.</p>
+        </div>
+        <div class="card">
+          <span class="tag tag-purple">Pattern 3</span>
+          <h3>Parallelization</h3>
+          <p>Run multiple LLM calls simultaneously. "Sectioning" (different subtasks) or "voting" (same task, aggregate). The multi-agent research system used this to reduce research time by up to 90%.</p>
+        </div>
+        <div class="card">
+          <span class="tag tag-yellow">Pattern 4</span>
+          <h3>Orchestrator-Workers</h3>
+          <p>A lead agent (Opus) dynamically breaks tasks and delegates to parallel worker agents (Sonnet). Outperformed single-agent by 90.2%. Token usage explains 80% of variance in quality.</p>
+        </div>
+        <div class="card">
+          <span class="tag tag-red">Pattern 5</span>
+          <h3>Evaluator-Optimizer</h3>
+          <p>One LLM generates, another evaluates and provides feedback. Loop until quality threshold met. Critical because agents "confidently praise mediocre work." Separating concerns is non-negotiable for quality.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-agent -->
+    <div class="card" style="margin-top: 1.5rem;">
+      <span class="tag tag-accent">Parallel Execution</span>
+      <h3>Multi-Agent Development (Map-Reduce)</h3>
+      <div class="workflow">
+        <span class="workflow-step">Orchestrator defines tasks</span>
+        <span class="workflow-arrow">&rarr;</span>
+        <span class="workflow-step">Git-based task locking</span>
+        <span class="workflow-arrow">&rarr;</span>
+        <span class="workflow-step">N parallel agents (Docker/worktrees)</span>
+        <span class="workflow-arrow">&rarr;</span>
+        <span class="workflow-step">Verification tests</span>
+        <span class="workflow-arrow">&rarr;</span>
+        <span class="workflow-step">Merge upstream</span>
+      </div>
+      <p>For code migrations and large features, engineers use 10+ parallel Claude agents in a map-reduce pattern. Each agent in its own Docker container or git worktree. Coordination via shared upstream git repo with a <code>current_tasks/</code> directory for locking. Slash commands like <code>/pr_commit</code>, <code>/feature_dev</code>, <code>/code_review</code> standardize common operations. Average user cost: ~$6/day.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 04 HARNESSES -->
+<!-- ============================================================ -->
+<section id="harnesses">
+  <div class="container">
+    <div class="section-header">
+      <h4>04 &mdash; Agent Harness Design</h4>
+      <h2>Architectures for Long-Running Agents</h2>
+      <p>A harness is the scaffolding around a coding agent. Each component is a design decision encoding an assumption about model limitations.</p>
+    </div>
+
+    <!-- Two-Agent -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <span class="tag tag-blue">Architecture A</span>
+      <h3>Two-Agent System (Incremental Feature Development)</h3>
+      <div class="harness-diagram">
+<span class="dim">// Designed for long-running development across multiple context windows</span>
+
+<span class="hl">INITIALIZER AGENT</span> <span class="dim">(runs once at project start)</span>
+  <span class="blue">&rarr;</span> Generates <span class="green">features.json</span> <span class="dim">(200+ features, priority-ordered)</span>
+  <span class="blue">&rarr;</span> Creates <span class="green">init.sh</span> <span class="dim">(environment setup: deps, DB, config)</span>
+  <span class="blue">&rarr;</span> Establishes project scaffolding and test infrastructure
+
+<span class="hl">CODING AGENT</span> <span class="dim">(runs repeatedly, each invocation = fresh context window)</span>
+  <span class="purple">Session startup prompt:</span>
+  "Run pwd, read git logs and progress files,
+   read features list and choose highest-priority unfinished feature."
+
+  <span class="blue">&rarr;</span> Reads progress state from filesystem <span class="dim">(not memory &mdash; files persist across contexts)</span>
+  <span class="blue">&rarr;</span> Picks next unfinished feature from features.json
+  <span class="blue">&rarr;</span> Implements feature + writes tests
+  <span class="blue">&rarr;</span> Runs full test suite
+  <span class="blue">&rarr;</span> Commits progress + updates progress tracking files
+  <span class="blue">&rarr;</span> Exits <span class="dim">(harness invokes it again for next feature)</span>
+
+  <span class="dim">// The critical constraint:</span>
+  <span class="hl">"It is unacceptable to remove or edit existing tests &mdash;
+   this could lead to missing or buggy functionality."</span>
+
+  <span class="dim">// Why: without this, agents "solve" failing tests by deleting them</span>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.93rem;">The key insight is filesystem-based state. Each context window starts fresh, but the agent reconstructs its understanding by reading git logs, progress files, and the features list. This eliminates context window limits as a constraint on project size.</p>
+    </div>
+
+    <!-- Three-Agent -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <span class="tag tag-purple">Architecture B</span>
+      <h3>Three-Agent System (Quality-Critical Applications)</h3>
+      <div class="harness-diagram">
+<span class="hl">PLANNER AGENT</span>
+  <span class="blue">&rarr;</span> Expands terse user prompt into comprehensive spec
+  <span class="blue">&rarr;</span> Defines acceptance criteria, edge cases, test scenarios
+  <span class="blue">&rarr;</span> Outputs structured implementation plan
+  <span class="dim">// Why: models under-specify when generating and over-specify when planning</span>
+
+       <span class="dim">|</span>
+       <span class="dim">v</span>
+
+<span class="hl">GENERATOR AGENT</span>
+  <span class="blue">&rarr;</span> Executes the plan, writes code + tests + configs
+  <span class="blue">&rarr;</span> Follows spec without deviation
+  <span class="dim">// Separate from planner to avoid plan drift during implementation</span>
+
+       <span class="dim">|</span>
+       <span class="dim">v</span>
+
+<span class="hl">EVALUATOR AGENT</span> <span class="dim">(must be separate from generator)</span>
+  <span class="blue">&rarr;</span> Quality assessment via <span class="green">active testing</span> (not just code review)
+  <span class="blue">&rarr;</span> Actually runs the application, clicks through flows, checks behavior
+  <span class="blue">&rarr;</span> Provides structured feedback with pass/fail per criterion
+  <span class="blue">&rarr;</span> Loops back to Generator with specific fixes needed
+
+<span class="dim">// Economics:</span>
+<span class="dim">// Full harness: 6 hours, ~$200, high quality</span>
+<span class="dim">// Solo agent:   20 min,  ~$9,  "immediately apparent" quality gap</span>
+<span class="dim">// The harness is 22x more expensive but produces production-ready output</span>
+      </div>
+    </div>
+
+    <!-- Parallel -->
+    <div class="card">
+      <span class="tag tag-yellow">Architecture C</span>
+      <h3>Parallel Agent System (C Compiler Project)</h3>
+      <div class="harness-diagram">
+<span class="dim">// 16 parallel agents, ~2,000 sessions, ~$20,000 in API costs</span>
+<span class="dim">// Result: 100,000-line Rust C compiler supporting x86, ARM, RISC-V</span>
+
+<span class="hl">TASK COORDINATOR</span>
+  <span class="blue">&rarr;</span> Maintains <span class="green">current_tasks/</span> directory in shared git repo
+  <span class="blue">&rarr;</span> Git-based locking: agent creates lock file, pushes, checks for conflicts
+  <span class="blue">&rarr;</span> Each task has a deterministic verification test suite
+  <span class="blue">&rarr;</span> Tasks ordered by dependency graph
+
+<span class="hl">AGENT POOL</span> <span class="dim">(16 Docker containers, each isolated)</span>
+  <span class="blue">&rarr;</span> Agent pulls latest from upstream
+  <span class="blue">&rarr;</span> Claims task via git lock (push, check for conflict)
+  <span class="blue">&rarr;</span> Implements in isolated container
+  <span class="blue">&rarr;</span> Runs local verification suite
+  <span class="blue">&rarr;</span> Pushes completed work to shared upstream
+
+<span class="hl">KEY INSIGHT:</span>
+<span class="green">"The task verifier must be nearly perfect,</span>
+<span class="green"> otherwise Claude will solve the wrong problem."</span>
+
+<span class="dim">// Results:</span>
+<span class="dim">// 99% pass rate on GCC torture test suite</span>
+<span class="dim">// Builds bootable Linux 6.9 kernel</span>
+<span class="dim">// Compiles PostgreSQL, QEMU, FFmpeg</span>
+<span class="dim">// Runs Doom</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 04b CLAUDE.md, HOOKS & SKILLS DEEP DIVE -->
+<!-- ============================================================ -->
+<section id="claudemd">
+  <div class="container">
+    <div class="section-header">
+      <h4>04b &mdash; CLAUDE.md, Hooks & Skills</h4>
+      <h2>The Configuration Layer That Powers Everything</h2>
+      <p>CLAUDE.md files, hooks, and skills form the persistent configuration layer between humans and Claude Code. Understanding these systems is essential to replicating Anthropic's workflows.</p>
+    </div>
+
+    <!-- CLAUDE.md -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h3>CLAUDE.md File Hierarchy (5 Scopes)</h3>
+      <p style="margin-bottom: 1rem;">Files are loaded by walking UP the directory tree. All discovered files are concatenated &mdash; they do not override each other.</p>
+      <table class="ref-table">
+        <thead><tr><th>Scope</th><th>Location</th><th>Shared With</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Managed policy</strong></td><td><code>/Library/Application Support/ClaudeCode/CLAUDE.md</code> (macOS)</td><td>All org users (cannot be excluded)</td></tr>
+          <tr><td><strong>Project</strong></td><td><code>./CLAUDE.md</code> or <code>./.claude/CLAUDE.md</code></td><td>Team via source control</td></tr>
+          <tr><td><strong>User</strong></td><td><code>~/.claude/CLAUDE.md</code></td><td>Just you, all projects</td></tr>
+          <tr><td><strong>Local</strong></td><td><code>./CLAUDE.local.md</code> (gitignored)</td><td>Just you, current project</td></tr>
+          <tr><td><strong>Rules</strong></td><td><code>.claude/rules/*.md</code> (supports <code>paths:</code> frontmatter for glob-scoping)</td><td>Team via source control</td></tr>
+        </tbody>
+      </table>
+      <div class="quote" style="margin-top: 1rem;">
+        <p>"Anytime we see Claude do something incorrectly we add it to the CLAUDE.md. During code review, we tag @.claude on PRs to add learnings directly &mdash; Compounding Engineering."</p>
+        <cite>&mdash; Boris Cherny</cite>
+      </div>
+      <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.93rem;"><strong>Best practices:</strong> Target under 200 lines per file. Use <code>@path/to/import</code> to import files (max 5 hops). Run <code>/init</code> to auto-generate. HTML comments are stripped before injection to save tokens. "Claude is eerily good at writing rules for itself."</p>
+    </div>
+
+    <!-- Auto Memory -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h3>Auto Memory Architecture</h3>
+      <p style="color: var(--text-secondary);">Lives at <code>~/.claude/projects/&lt;project&gt;/memory/</code> (derived from git repo). Machine-local, not shared across teams.</p>
+      <div class="harness-diagram">
+<span class="green">MEMORY.md</span>          <span class="dim">// Index file, first 200 lines / 25KB loaded at session start</span>
+<span class="green">debugging.md</span>       <span class="dim">// Topic files loaded on demand when relevant</span>
+<span class="green">api-conventions.md</span> <span class="dim">// Each file has frontmatter: name, description, type</span>
+
+<span class="dim">// Memory types: user, feedback, project, reference</span>
+<span class="dim">// Claude writes to memory when it discovers info worth remembering</span>
+<span class="dim">// The MEMORY.md index drives relevance matching for future sessions</span>
+      </div>
+    </div>
+
+    <!-- Hooks -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <h3>Hooks System (26 Lifecycle Events)</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem;">Hooks execute shell commands, HTTP requests, prompt evaluations, or spawn sub-agents in response to Claude Code lifecycle events. Configured in <code>settings.json</code>.</p>
+      <div class="two-col">
+        <div>
+          <p style="color: var(--text); font-weight: 600; margin-bottom: 0.5rem;">4 Handler Types</p>
+          <ul class="checklist">
+            <li><strong>Command</strong> &mdash; run shell commands, receive JSON via stdin</li>
+            <li><strong>HTTP</strong> &mdash; POST to a URL, parse JSON response</li>
+            <li><strong>Prompt</strong> &mdash; single-turn Claude model evaluation</li>
+            <li><strong>Agent</strong> &mdash; spawn sub-agent with Read/Grep/Glob tools</li>
+          </ul>
+        </div>
+        <div>
+          <p style="color: var(--text); font-weight: 600; margin-bottom: 0.5rem;">Key Blocking Events</p>
+          <ul class="checklist">
+            <li><code>PreToolUse</code> &mdash; intercept before any tool executes</li>
+            <li><code>PermissionRequest</code> &mdash; custom permission logic</li>
+            <li><code>UserPromptSubmit</code> &mdash; modify/validate user input</li>
+            <li><code>Stop</code> &mdash; intercept before session ends</li>
+          </ul>
+        </div>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.93rem; margin-top: 1rem;"><strong>Exit codes:</strong> 0 = success (parses stdout JSON), 2 = <strong>blocks the action</strong>, other = non-blocking error. Matchers use regex. The <code>if</code> field uses permission rule syntax (e.g., <code>Bash(git *)</code>, <code>Edit(*.ts)</code>).</p>
+      <p style="color: var(--text-secondary); font-size: 0.93rem; margin-top: 0.5rem;"><strong>Anthropic's actual hook config:</strong> PostToolUse on Write|Edit runs <code>bun run format || true</code> &mdash; auto-formatting every file Claude touches.</p>
+    </div>
+
+    <!-- Skills -->
+    <div class="card">
+      <h3>Skills System (SKILL.md)</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem;">Skills are the extensibility layer for Claude Code. They combine a markdown prompt with frontmatter configuration, supporting files, and dynamic context injection. Follows the open <a href="https://agentskills.io" target="_blank">Agent Skills</a> standard.</p>
+      <div class="harness-diagram">
+<span class="dim">// Example SKILL.md</span>
+<span class="hl">---</span>
+<span class="green">name:</span> explain-code
+<span class="green">description:</span> Explains code with diagrams and analogies
+<span class="green">allowed-tools:</span> Read Grep
+<span class="green">agent:</span> Explore
+<span class="green">model:</span> sonnet
+<span class="green">effort:</span> high
+<span class="green">context:</span> fork       <span class="dim">// runs in forked context, doesn't pollute main</span>
+<span class="hl">---</span>
+Markdown instructions here...
+
+<span class="dim">// Dynamic context: `` !`command` `` runs shell before injection</span>
+<span class="dim">// Discovery: descriptions loaded at ~1% of context window</span>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.93rem; margin-top: 1rem;"><strong>Bundled skills:</strong> <code>/batch</code> (parallel changes in worktrees), <code>/simplify</code> (3 parallel review agents), <code>/loop</code> (recurring execution), <code>/debug</code> (troubleshooting), <code>/claude-api</code> (API reference loader). Custom skills live in <code>.claude/skills/</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 04c BORIS CHERNY'S EXACT WORKFLOW -->
+<!-- ============================================================ -->
+<section id="boris">
+  <div class="container">
+    <div class="section-header">
+      <h4>04c &mdash; Case Study</h4>
+      <h2>Boris Cherny's Exact Daily Workflow</h2>
+      <p>The creator of Claude Code's actual working setup, documented from multiple interviews and <a href="https://howborisusesclaudecode.com" target="_blank">howborisusesclaudecode.com</a>.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Parallel Sessions</h3>
+        <ul class="checklist">
+          <li>Runs <strong>5 Claude Code instances</strong> simultaneously in separate git checkouts (numbered tabs 1-5)</li>
+          <li>Maintains <strong>5-10 additional sessions</strong> on claude.ai/code</li>
+          <li>Starts morning sessions from iPhone, resumes on desktop</li>
+          <li>Shell aliases <code>za</code>, <code>zb</code>, <code>zc</code> for one-keystroke worktree navigation</li>
+          <li>Some team members have dedicated "analysis" worktrees for logs/BigQuery</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Model & Settings</h3>
+        <ul class="checklist">
+          <li>Exclusively uses <strong>Opus 4.5 with thinking mode</strong>: "It's the best coding model I've ever used"</li>
+          <li>Uses <code>/effort max</code> for complex debugging and architecture</li>
+          <li>Hasn't edited a line of code by hand since November 2025</li>
+          <li>Ships <strong>10-30 PRs per day</strong></li>
+          <li>Created ~20 prototypes in two days for the todo list feature alone</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 1.5rem;">
+      <h3>Code Review Revolution at Anthropic</h3>
+      <p>Code output per engineer <strong>up 200%</strong>, making reviews the bottleneck. Solution: <strong>multi-agent code review</strong>. When a PR is opened, multiple review agents run independently in parallel, catching ~80% of low-level bugs before any human sees the code. Teams went from 80% manual (Nov 2025) to 80% AI-driven (Dec 2025), shipping 49 PRs in 2 days.</p>
+      <div class="quote">
+        <p>"Give Claude a way to verify its work. If Claude has that feedback loop, it will 2-3x the quality of the final result."</p>
+        <cite>&mdash; Boris Cherny, #1 Tip</cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 05 CONTEXT ENGINEERING -->
+<!-- ============================================================ -->
+<section id="context">
+  <div class="container">
+    <div class="section-header">
+      <h4>05 &mdash; Context Engineering</h4>
+      <h2>Optimizing Token Utility Across Inference Turns</h2>
+      <p>Context engineering is the discipline of managing what information reaches the model and when. As context windows grow, recall accuracy decreases due to transformer attention budget (n-squared).</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <span class="tag tag-blue">Technique 1</span>
+        <h3>Compaction</h3>
+        <p>Summarize conversation history while preserving architectural decisions and key context. Claude Code does this automatically when approaching context limits. The compacted summary is loaded into the next context window, allowing work to continue across sessions.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-green">Technique 2</span>
+        <h3>Structured Note-Taking</h3>
+        <p>Persistent external memory via files: <code>CLAUDE.md</code> (project instructions), <code>NOTES.md</code> (discoveries), to-do lists. These files persist across context windows and are loaded on session start. The CLAUDE.md file can be project-level, user-level (~/.claude/CLAUDE.md), or directory-scoped.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-purple">Technique 3</span>
+        <h3>Sub-Agent Delegation</h3>
+        <p>Delegate research to specialist sub-agents that return 1,000-2,000 token summaries instead of loading full file contents into the main context. This protects the orchestrator's context from bloat while allowing deep exploration.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-yellow">Technique 4</span>
+        <h3>Just-in-Time Retrieval</h3>
+        <p>Maintain lightweight identifiers (file paths, function names) and dynamically load full content only when needed at runtime. Don't pre-load everything &mdash; let the agent pull what it needs via tools like <code>Read</code>, <code>Grep</code>, <code>Glob</code>.</p>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>The "Think" Tool</h3>
+      <p style="color: var(--text-secondary);">Creates a designated space for Claude to pause during response generation for structured reasoning. Unlike chain-of-thought in the response, the think tool's content is not shown to the user but is available to the model. Results: <strong>54% improvement</strong> in complex airline customer service tasks; <strong>1.6% improvement</strong> on SWE-bench (p &lt; .001). Most effective in multi-step tool use where the model must plan across several operations.</p>
+    </div>
+
+    <div class="subsection">
+      <h3>Extended Thinking (Deep Technical)</h3>
+      <div class="two-col">
+        <div class="card">
+          <h3>API Configuration</h3>
+          <div class="harness-diagram">
+<span class="dim">// Enable extended thinking</span>
+{
+  "<span class="green">thinking</span>": {
+    "type": "<span class="hl">enabled</span>",
+    "budget_tokens": <span class="blue">10000</span>
+  }
+}
+
+<span class="dim">// Claude Opus 4.6 / Sonnet 4.6:</span>
+<span class="dim">// Use "type": "adaptive" instead</span>
+<span class="dim">// (manual budget_tokens deprecated)</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Key Constraints</h3>
+          <ul class="checklist">
+            <li><strong>Minimum budget:</strong> 1,024 tokens</li>
+            <li><code>budget_tokens</code> must be &lt; <code>max_tokens</code></li>
+            <li>Display modes: <code>summarized</code> (default), <code>omitted</code> (faster streaming)</li>
+            <li><strong>Billed for full thinking</strong> even when summarized/omitted</li>
+            <li>Only supports <code>tool_choice: "auto"</code> or <code>"none"</code></li>
+            <li><strong>Interleaved thinking</strong> (between tool calls): beta header <code>interleaved-thinking-2025-05-14</code></li>
+            <li>Thinking blocks must be passed back unchanged in multi-turn</li>
+          </ul>
+        </div>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.93rem; margin-top: 1rem;">Key difference from the "think" tool: extended thinking happens before the first response token across the full context, while the think tool is invoked between tool calls for local reasoning. Larger budgets improve quality but Claude may not use the full budget, especially above 32K tokens.</p>
+    </div>
+
+    <div class="subsection">
+      <h3>Prompt Caching (Deep Technical)</h3>
+      <div class="two-col">
+        <div class="card">
+          <h3>Mechanism</h3>
+          <ul class="checklist">
+            <li>Up to <strong>4 explicit cache breakpoints</strong> per request via <code>cache_control: {"type": "ephemeral"}</code></li>
+            <li>Cache prefix order is strict: <code>tools &rarr; system &rarr; messages</code></li>
+            <li><strong>20-block lookback window</strong> per breakpoint for cache hits</li>
+            <li>Automatic mode: single <code>cache_control</code> at top-level, system auto-places breakpoint</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Pricing & TTL</h3>
+          <ul class="checklist">
+            <li><strong>5-minute TTL (default):</strong> Write = 1.25x base input, Read = 0.1x (90% savings)</li>
+            <li><strong>1-hour TTL:</strong> Write = 2x base input, Read = 0.1x</li>
+            <li>Cache refreshed at no cost each time used</li>
+            <li><strong>Minimum tokens:</strong> Opus 4.6 = 4,096; Sonnet 4.6 = 2,048; Sonnet 4/Opus 4 = 1,024</li>
+          </ul>
+        </div>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.93rem; margin-top: 1rem;"><strong>Invalidation rules:</strong> Changing tool definitions invalidates everything. Changing system prompt invalidates system + messages. Changing extended thinking settings invalidates messages only. Claude Code caches the system prompt and CLAUDE.md context, making every subsequent tool call in a session dramatically cheaper.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 06 EVALS -->
+<!-- ============================================================ -->
+<section id="evals">
+  <div class="container">
+    <div class="section-header">
+      <h4>06 &mdash; Evaluations & Testing</h4>
+      <h2>How Anthropic Measures Agent Quality</h2>
+      <p>"Teams without evals face reactive loops &mdash; catching issues only in production."</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Core Metrics</h3>
+        <ul class="checklist">
+          <li><strong>pass@k</strong>: Probability of at least 1 correct solution in k attempts. Use for development.</li>
+          <li><strong>pass^k</strong>: Probability all k trials succeed. Critical for reliability &mdash; if pass@1 = 80%, pass^3 = 51%.</li>
+          <li><strong>SWE-bench Verified</strong>: Real GitHub issues from open-source repos. Claude 3.5 Sonnet (new): 49%. Previous SOTA: 45%.</li>
+          <li><strong>Terminal-Bench</strong>: Tests command-line and system administration capabilities.</li>
+          <li><strong>HumanEval / Aider Polyglot</strong>: Code generation across multiple languages.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Practical Eval Design</h3>
+        <ul class="checklist">
+          <li><strong>Start small</strong>: 20-50 tasks from actual user failures, not hundreds of synthetic cases.</li>
+          <li><strong>Infrastructure noise is real</strong>: Anthropic measured a <strong>6 percentage point difference</strong> on Terminal-Bench 2.0 from infrastructure noise alone.</li>
+          <li><strong>3x resource ceiling</strong>: Eval environments need 3x the resources of the task to balance stability vs. difficulty.</li>
+          <li><strong>Eval awareness</strong>: Models may behave differently when they detect they're being evaluated (documented in BrowseComp research).</li>
+          <li><strong>AI-resistant evals</strong>: Design evaluations that remain meaningful as model capabilities increase.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 1.5rem;">
+      <h3>The Postmortem Lesson</h3>
+      <p>In September 2025, three production bugs revealed critical evaluation gaps: (1) context window routing errors affected 30% of Claude Code users, (2) TPU misconfiguration caused output corruption, (3) an XLA:TPU compiler bug was triggered by code deployment. The key finding: <strong>"evaluations simply didn't capture the degradation users were reporting."</strong> Privacy controls limited engineer access to user interactions. Systemic changes: more sensitive evaluations, continuous production monitoring, <code>/bug</code> command and thumbs-down buttons for direct user feedback.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 07 TEAMS -->
+<!-- ============================================================ -->
+<section id="teams">
+  <div class="container">
+    <div class="section-header">
+      <h4>07 &mdash; Team Practices</h4>
+      <h2>How 10 Anthropic Teams Use Claude Code</h2>
+      <p>From the official 22-page PDF. Source: <a href="https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf" target="_blank">How Anthropic Teams Use Claude Code (PDF)</a></p>
+    </div>
+
+    <details>
+      <summary>Product Development (Claude Code Team)</summary>
+      <div class="detail-content">
+        <div class="badge-row"><span class="badge">auto-accept</span><span class="badge">shift+tab</span><span class="badge">github actions</span><span class="badge">5-30 PRs/day</span></div>
+        <p>Uses auto-accept mode (Shift+Tab) for autonomous loops. Claude writes code, runs tests, and iterates. Reviews the ~80% complete solution before human refinement. GitHub Actions integration lets Claude automatically address PR review comments.</p>
+        <p><strong>Self-sufficient loops:</strong> Set up Claude to verify its own work by running builds, tests, and lints automatically. The agent should be able to detect and fix its own errors without human intervention for routine issues.</p>
+        <p><strong>Task classification:</strong> Peripheral features (docs, tests, UI tweaks) run fully async. Core business logic and security-sensitive code stay synchronous with human review. Developing this classification intuition is the meta-skill.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Security Engineering</summary>
+      <div class="detail-content">
+        <div class="badge-row"><span class="badge">TDD</span><span class="badge">incident response</span><span class="badge">terraform review</span><span class="badge">50% of slash commands</span></div>
+        <p>Feeds stack traces and documentation for incident response (10-15 min &rarr; ~5 min). Reviews Terraform plans: "What's this going to do? Am I going to regret this?" Uses 50% of all custom slash commands in the monorepo.</p>
+        <p><strong>TDD workflow:</strong> Pseudocode first, guide through test-driven development, periodically check in. Tell Claude to "commit your work as you go" and let it work autonomously between checkpoints.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Data Infrastructure</summary>
+      <div class="detail-content">
+        <div class="badge-row"><span class="badge">kubernetes</span><span class="badge">onboarding</span><span class="badge">CLAUDE.md loop</span></div>
+        <p>Feed screenshots of Kubernetes dashboards into Claude Code for diagnosis (found pod IP address exhaustion). New hires directed to Claude Code to navigate the massive codebase.</p>
+        <p><strong>Continuous improvement loop:</strong> End-of-session CLAUDE.md updates document what was learned. Next session starts with richer context. Over time, the CLAUDE.md becomes a living knowledge base for the project.</p>
+        <p><strong>Finance automation:</strong> Finance team writes plain text workflow descriptions, loads them into Claude Code for fully automated execution.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Data Science & ML Engineering</summary>
+      <div class="detail-content">
+        <div class="badge-row"><span class="badge">slot machine</span><span class="badge">5000-line dashboards</span><span class="badge">cross-domain</span></div>
+        <p>Build 5,000-line TypeScript React dashboards despite "very little JavaScript and TypeScript" knowledge. Create permanent React dashboards instead of throwaway Jupyter notebooks.</p>
+        <p><strong>The slot machine pattern in practice:</strong> Commit clean state. Give Claude the task. Walk away for 30 minutes. Come back and evaluate: if it's good, merge. If not, <code>git reset --hard</code> and try a different prompt. This is faster than debugging a broken attempt.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Inference Team</summary>
+      <div class="detail-content">
+        <div class="badge-row"><span class="badge">80% R&D reduction</span><span class="badge">cross-language</span><span class="badge">rust without knowing rust</span></div>
+        <p>Claude writes comprehensive unit tests with edge cases, reducing R&D time by 80%. Cross-language translation: writing Rust test logic without knowing Rust. Kubernetes command recall: "how to get all pods or deployment status" &mdash; faster than searching documentation.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Growth Marketing (Non-Technical, Team of One)</summary>
+      <div class="detail-content">
+        <div class="badge-row"><span class="badge">google ads automation</span><span class="badge">figma plugin</span><span class="badge">meta ads MCP</span><span class="badge">10x output</span></div>
+        <p>Automated Google Ads workflow: processes CSV files, uses two specialized sub-agents (one for headlines, one for descriptions). Built a Figma plugin for mass creative production: generates up to 100 ad variations, half a second per batch. Built a Meta Ads MCP server for campaign analytics.</p>
+        <p>Ad copy creation: <strong>2 hours &rarr; 15 minutes</strong>. 10x increase in creative output. One non-technical person replaced a workflow that previously required coordination across multiple teams.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Product Design</summary>
+      <div class="detail-content">
+        <div class="badge-row"><span class="badge">direct CSS implementation</span><span class="badge">figma + claude code 80%</span><span class="badge">rapid prototyping</span></div>
+        <p>Designers directly implement visual tweaks (typefaces, colors, spacing) using Claude Code. Paste mockup images directly into Claude Code for rapid prototyping. Figma and Claude Code open 80% of the time.</p>
+        <p>Complex copy changes that required a week of coordination across teams now take two 30-minute calls. GitHub Actions automated ticketing: file issues, Claude proposes code solutions.</p>
+        <p><strong>Key:</strong> Custom memory files telling Claude "you're a designer needing detailed explanations" dramatically improve output quality for non-engineers.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>API Knowledge Team</summary>
+      <div class="detail-content">
+        <div class="badge-row"><span class="badge">first stop for any task</span><span class="badge">model iteration testing</span></div>
+        <p>Claude Code as "first stop" for any task &mdash; identifies relevant files before starting work. Model iteration testing through dogfooding: Claude Code automatically uses latest research model snapshots, providing real-world feedback to the model team.</p>
+        <p><strong>Key:</strong> Start with minimal information. Let Claude guide through the process of understanding the codebase rather than pre-loading everything.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>RL Engineering</summary>
+      <div class="detail-content">
+        <div class="badge-row"><span class="badge">try and rollback</span><span class="badge">1/3 first-attempt success</span></div>
+        <p>"Try and rollback" methodology with frequent checkpointing. Works on first attempt ~33% of the time; rest needs guidance or manual intervention. Always try one-shot first, then collaborate.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Legal Team</summary>
+      <div class="detail-content">
+        <div class="badge-row"><span class="badge">non-technical</span><span class="badge">system building</span></div>
+        <p>Lawyers built phone tree systems using Claude Code. Demonstrates that fully non-technical team members can build functional software &mdash; the "everyone codes" thesis in action.</p>
+      </div>
+    </details>
+
+    <!-- Internal research data -->
+    <div class="card" style="margin-top: 1.5rem;">
+      <h3>Internal Research: AI Transforming Work at Anthropic</h3>
+      <p>In August 2025, Anthropic surveyed <strong>132 engineers and researchers</strong>, conducted <strong>53 in-depth qualitative interviews</strong>, and analyzed <strong>200,000 internal Claude Code transcripts</strong> (Feb-Aug 2025).</p>
+      <div class="two-col" style="margin-top: 1rem;">
+        <ul class="checklist">
+          <li>AI usage in daily work: <strong>28% &rarr; 59%</strong> (one year)</li>
+          <li>Self-reported productivity boost: <strong>20% &rarr; 50%</strong></li>
+          <li>Merged PRs per engineer per day: <strong>+67%</strong></li>
+          <li>27% of AI-assisted work = tasks that wouldn't otherwise be done</li>
+        </ul>
+        <ul class="checklist">
+          <li>Consecutive tool calls (no human): <strong>9.8 &rarr; 21.2</strong></li>
+          <li>Human turns per transcript: <strong>6.2 &rarr; 4.1</strong> (-33%)</li>
+          <li>Task complexity score: <strong>3.2 &rarr; 3.8</strong> (out of 5)</li>
+          <li>Skill expansion: "I can capably work on front-end where previously I'd have been scared to touch stuff"</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 07b AGENT SDK & SUBAGENTS -->
+<!-- ============================================================ -->
+<section id="sdk">
+  <div class="container">
+    <div class="section-header">
+      <h4>07b &mdash; Agent SDK & Subagents</h4>
+      <h2>Programmable Agents for CI/CD and Production</h2>
+      <p>The Agent SDK provides the same capabilities as Claude Code CLI, but programmable. The Subagent system enables parallel agent execution within sessions.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <h3>Agent SDK &mdash; Python</h3>
+        <div class="harness-diagram">
+<span class="dim">from</span> claude_agent_sdk <span class="dim">import</span> query, ClaudeAgentOptions
+
+<span class="dim">async for</span> message <span class="dim">in</span> <span class="hl">query</span>(
+    prompt=<span class="green">"Find and fix the bug in auth.py"</span>,
+    options=ClaudeAgentOptions(
+        allowed_tools=[<span class="green">"Read"</span>, <span class="green">"Edit"</span>, <span class="green">"Bash"</span>]
+    ),
+):
+    print(message)
+        </div>
+      </div>
+      <div class="card">
+        <h3>Agent SDK &mdash; TypeScript</h3>
+        <div class="harness-diagram">
+<span class="dim">import</span> { query } <span class="dim">from</span> <span class="green">"@anthropic-ai/claude-agent-sdk"</span>;
+
+<span class="dim">for await</span> (<span class="dim">const</span> message <span class="dim">of</span> <span class="hl">query</span>({
+  prompt: <span class="green">"Find and fix the bug in auth.py"</span>,
+  options: {
+    allowedTools: [<span class="green">"Read"</span>, <span class="green">"Edit"</span>, <span class="green">"Bash"</span>]
+  }
+})) {
+  console.log(message);
+}
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 1.5rem;">
+      <h3>Built-in Subagent Types</h3>
+      <table class="ref-table">
+        <thead><tr><th>Agent</th><th>Model</th><th>Tools</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Explore</strong></td><td>Haiku (fast)</td><td>Read-only</td><td>Codebase search, file discovery. Supports <code>quick</code> / <code>medium</code> / <code>very thorough</code></td></tr>
+          <tr><td><strong>Plan</strong></td><td>Inherits</td><td>Read-only</td><td>Research and design implementation plans</td></tr>
+          <tr><td><strong>general-purpose</strong></td><td>Inherits</td><td>All tools</td><td>Complex multi-step tasks, web search, code changes</td></tr>
+          <tr><td><strong>code-reviewer</strong></td><td>Inherits</td><td>Read/Grep/Glob/Bash</td><td>Quality, security, maintainability review</td></tr>
+          <tr><td><strong>Custom</strong></td><td>Configurable</td><td>Configurable</td><td>Defined via <code>.claude/agents/*.md</code> with frontmatter</td></tr>
+        </tbody>
+      </table>
+      <p style="color: var(--text-secondary); font-size: 0.93rem; margin-top: 1rem;"><strong>Isolation:</strong> Setting <code>isolation: worktree</code> gives each subagent its own git worktree &mdash; an isolated copy of the repository. Worktrees are auto-cleaned if the subagent makes no changes. This enables parallel agents editing the same files independently. <strong>Permission modes:</strong> <code>default</code>, <code>acceptEdits</code>, <code>auto</code>, <code>dontAsk</code>, <code>bypassPermissions</code>, <code>plan</code>.</p>
+    </div>
+
+    <div class="card" style="margin-top: 1.5rem;">
+      <h3>Computer Use (Browser Automation)</h3>
+      <p>Claude can interact with computer screens via screenshot-based perception and coordinate-based actions. Relevant for testing web UIs, automated QA, and browser-based workflows.</p>
+      <div class="two-col" style="margin-top: 1rem;">
+        <div>
+          <ul class="checklist">
+            <li><strong>Actions:</strong> screenshot, click, type, key, scroll, drag, zoom</li>
+            <li><strong>Coordinate system:</strong> downsampled screenshots (max 1568px longest edge)</li>
+            <li>Your implementation scales coordinates back to actual screen resolution</li>
+          </ul>
+        </div>
+        <div>
+          <ul class="checklist">
+            <li><strong>Prompt injection defense:</strong> 1% Attack Success Rate against adaptive attacker (100 attempts)</li>
+            <li>Training-based + classifier-based defenses</li>
+            <li>Beta headers required for activation</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 08 MCP -->
+<!-- ============================================================ -->
+<section id="mcp">
+  <div class="container">
+    <div class="section-header">
+      <h4>08 &mdash; Model Context Protocol (MCP)</h4>
+      <h2>The Standard for Tool Integration</h2>
+      <p>MCP is an open protocol that standardizes how AI models connect to external tools and data sources. Announced November 2024.</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <span class="tag tag-blue">Architecture</span>
+        <h3>Client-Server Protocol</h3>
+        <p>MCP follows a client-server architecture. The <strong>MCP host</strong> (Claude Code, Claude Desktop) connects to <strong>MCP servers</strong> that expose tools, resources, and prompts. Servers are lightweight processes (often Node.js or Python) that implement the MCP specification. Communication uses JSON-RPC over stdio or SSE.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-green">In Practice</span>
+        <h3>How Anthropic Uses MCP</h3>
+        <p>The Growth Marketing team built a Meta Ads MCP server for campaign analytics. Data Infrastructure recommends "MCP servers instead of CLI for sensitive data" because MCP servers can enforce access controls. Desktop Extensions provide one-click MCP server installation. The code execution MCP enables sandboxed code running inside Claude.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-purple">Ecosystem</span>
+        <h3>Open Standard</h3>
+        <p>Full specification at <a href="https://modelcontextprotocol.io" target="_blank">modelcontextprotocol.io</a>. GitHub organization: <a href="https://github.com/modelcontextprotocol" target="_blank">modelcontextprotocol</a>. GitHub's official MCP server is maintained at <code>anthropics/github-mcp-server</code>. Anthropic Academy offers courses on MCP basics and advanced topics.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 09 SAFETY & INTERPRETABILITY -->
+<!-- ============================================================ -->
+<section id="safety">
+  <div class="container">
+    <div class="section-header">
+      <h4>09 &mdash; Safety, Alignment & Interpretability</h4>
+      <h2>The Research Foundation</h2>
+      <p>Anthropic's engineering practices are inseparable from their safety research. Understanding these papers gives context to why Claude Code works the way it does.</p>
+    </div>
+
+    <!-- Alignment & Safety -->
+    <div class="subsection">
+      <h3>Core Safety Research</h3>
+      <div class="card-grid">
+        <div class="card">
+          <span class="tag tag-red">Foundational</span>
+          <h3>Constitutional AI (CAI)</h3>
+          <p>A method for training harmless AI using self-improvement via a set of principles ("constitution") rather than human-labeled harmful outputs. Two phases: supervised learning (self-critique and revision) + RL with AI-generated preference labels. This is why Claude can self-correct during coding &mdash; the constitutional approach trains the model to reason about its own outputs.</p>
+          <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2212.08073" target="_blank">arxiv: 2212.08073</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-red">Foundational</span>
+          <h3>RLHF: Helpful & Harmless</h3>
+          <p>Applies preference modeling and RLHF to fine-tune language models as assistants. Key finding: alignment training <em>improves</em> performance on nearly all NLP evaluations, including coding. It's not a tradeoff. Released the hh-rlhf dataset (public, on GitHub).</p>
+          <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2204.05862" target="_blank">arxiv: 2204.05862</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-purple">Safety</span>
+          <h3>Sleeper Agents</h3>
+          <p>Trains LLMs with backdoor behaviors (write secure code in 2023, insert vulnerabilities when year is 2024). These deceptive behaviors <em>persist through</em> standard safety training (SFT, RLHF, adversarial training). Directly relevant to trusting AI-generated code.</p>
+          <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2401.05566" target="_blank">arxiv: 2401.05566</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-purple">Safety</span>
+          <h3>Alignment Faking</h3>
+          <p>First empirical demonstration of alignment faking without explicit training. Claude 3 Opus, when told it would be retrained, strategically complied with harmful requests 14% of the time to preserve its preferred behavior. Demonstrates why robust evaluation of AI agents is critical.</p>
+          <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2412.14093" target="_blank">arxiv: 2412.14093</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-yellow">Evaluation</span>
+          <h3>Sabotage Evaluations</h3>
+          <p>Tests four sabotage types: human decision sabotage, <strong>code sabotage</strong> (inserting subtle bugs), sandbagging (hiding capabilities during testing), and undermining oversight. Current models: minimal mitigations suffice. But stronger ones will be needed soon.</p>
+          <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2410.21514" target="_blank">arxiv: 2410.21514</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-yellow">Evaluation</span>
+          <h3>Unfaithful Chain-of-Thought</h3>
+          <p>CoT explanations can systematically misrepresent model reasoning. Models exploit reward hacks &gt;99% of the time but verbalize them &lt;2% of the time. This is why you can't just read Claude's reasoning to verify its code &mdash; you need actual tests.</p>
+          <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2305.04388" target="_blank">arxiv: 2305.04388</a> (NeurIPS 2023)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interpretability -->
+    <div class="subsection">
+      <h3>Interpretability Research (Transformer Circuits Thread)</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem;">Published at <a href="https://transformer-circuits.pub" target="_blank">transformer-circuits.pub</a>. This research lets Anthropic understand what's happening inside Claude's "brain" when it writes code.</p>
+      <div class="card-grid">
+        <div class="card">
+          <span class="tag tag-blue">Foundation</span>
+          <h3>Toy Models of Superposition</h3>
+          <p>Mathematical framework for how neural networks store more features than dimensions. Networks compress sparse features via superposition, causing polysemanticity (one neuron = multiple concepts). Foundation for all subsequent interpretability work.</p>
+          <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2209.10652" target="_blank">arxiv: 2209.10652</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-green">Breakthrough</span>
+          <h3>Scaling Monosemanticity</h3>
+          <p>Scales sparse autoencoders to Claude 3 Sonnet (production model), extracting millions of interpretable features: the Golden Gate Bridge, code errors, deception, safety-relevant behaviors. Proved interpretability techniques transfer from small to large models.</p>
+          <p style="margin-top: 0.5rem;"><a href="https://transformer-circuits.pub/2024/scaling-monosemanticity/" target="_blank">transformer-circuits.pub</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-purple">Applied</span>
+          <h3>Circuit Tracing</h3>
+          <p>Attribution graphs trace the computational steps a model uses to transform inputs into outputs. Applied to Claude 3.5 Haiku. Open-sourced as a Python library. Revealed that the same core features activate across languages, and cases where Claude fabricates calculations without actual computation.</p>
+          <p style="margin-top: 0.5rem;"><a href="https://transformer-circuits.pub/2025/attribution-graphs/methods.html" target="_blank">transformer-circuits.pub</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Responsible Scaling -->
+    <div class="subsection">
+      <h3>Responsible Scaling Policy (RSP)</h3>
+      <p style="color: var(--text-secondary);">Anthropic's framework for risk governance proportional to model capabilities. Defines <strong>AI Safety Levels (ASL)</strong> with evaluation and deployment requirements at each level. Currently on <a href="https://anthropic.com/responsible-scaling-policy/rsp-v3-0" target="_blank">version 3.0</a>. Claude Opus 4 released under ASL-3 Standard; Claude Sonnet 4 under ASL-2 Standard. The <a href="https://www.anthropic.com/responsible-scaling-policy/roadmap" target="_blank">Frontier Safety Roadmap</a> outlines future milestones.</p>
+    </div>
+
+    <div class="quote">
+      <p>"The Paradox of Supervision: Effectively using Claude requires supervision skills that may atrophy from overuse."</p>
+      <cite>&mdash; How AI Is Transforming Work at Anthropic (Internal Research, 2025)</cite>
+    </div>
+    <p style="color: var(--text-secondary); margin-top: 1rem;">Academic research corroborates: developers using AI coding assistants scored <strong>17% lower</strong> on comprehension and debugging tests (<a href="https://arxiv.org/html/2601.20245v1" target="_blank">arxiv: 2601.20245</a>). Anthropic's own engineers report: "The more excited I am to do the task, the more likely I am to not use Claude." Balance AI leverage with maintaining deep technical understanding.</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 10 INFRASTRUCTURE -->
+<!-- ============================================================ -->
+<section id="infra">
+  <div class="container">
+    <div class="section-header">
+      <h4>10 &mdash; Infrastructure & Operations</h4>
+      <h2>Production Architecture at Scale</h2>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <span class="tag tag-blue">Compute</span>
+        <h3>Multi-Cloud, Multi-Chip</h3>
+        <p>Claude serves across <strong>AWS Trainium, NVIDIA GPUs, and Google TPUs</strong> with "strict equivalence standards" &mdash; identical quality regardless of hardware. Million-chip footprint across AWS and GCP. Serves on AWS, GCP, Azure, and additional CSPs.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-green">Orchestration</span>
+        <h3>Amazon EKS Ultra Scale</h3>
+        <p><strong>&gt;99% of compute on Amazon EKS</strong>. Runs some of the largest EKS clusters in production (trn2 instances, NVIDIA GPUs, Graviton processors). End-user latency KPIs improved from average 35% to consistently above 90% via EKS ultra-scale optimizations.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-purple">Deployment</span>
+        <h3>Progressive & Rainbow Delivery</h3>
+        <p>Canary/soak testing, blue-green deployments, traffic shifting, automated rollback. <strong>Rainbow deployments</strong> for multi-agent systems: gradually shift traffic between versions without disrupting running agents. Goal: make deployment "boring and unattended."</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-red">Security</span>
+        <h3>Sandboxing</h3>
+        <p>Two isolation mechanisms: <strong>filesystem isolation</strong> (Linux bubblewrap, macOS seatbelt) and <strong>network isolation</strong> (Unix domain socket proxy enforcing domain restrictions). Reduced permission prompts by 84% internally. Claude Code on web: isolated sandboxes with scoped git credentials outside the sandbox.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-yellow">Confidential</span>
+        <h3>Trusted Virtual Machines</h3>
+        <p>Confidential inference via trusted VMs ensures that even Anthropic cannot access user data during inference in high-security deployments. Published research on the architecture and guarantees.</p>
+      </div>
+      <div class="card">
+        <span class="tag tag-accent">CI/CD</span>
+        <h3>Claude Code GitHub Actions</h3>
+        <p><a href="https://github.com/anthropics/claude-code-action" target="_blank">claude-code-action</a> integrates Claude into CI pipelines. Automated PR review, code fixes in response to review comments, and security review via <a href="https://github.com/anthropics/claude-code-security-review" target="_blank">claude-code-security-review</a>. DevContainer features available for standardized environments.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 11 STUDY TIMELINE -->
+<!-- ============================================================ -->
+<section id="timeline">
+  <div class="container">
+    <div class="section-header">
+      <h4>11 &mdash; Study Timeline</h4>
+      <h2>Your 12-Week Deep Adoption Plan</h2>
+      <p>A phased approach to adopting Anthropic-style AI-first development, from foundations through production multi-agent systems.</p>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-phase">Week 1-2 &mdash; Foundations</div>
+        <h3>Core Philosophy, Tools & First Workflows</h3>
+        <p><strong>Read (essential):</strong> <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">Building Effective Agents</a> (the foundational paper). <a href="https://www.anthropic.com/engineering/claude-code-best-practices" target="_blank">Claude Code: Best practices for agentic coding</a>.</p>
+        <p><strong>Read (deep):</strong> <a href="https://newsletter.pragmaticengineer.com/p/how-claude-code-is-built" target="_blank">The Pragmatic Engineer: How Claude Code is built</a>. <a href="https://every.to/podcast/how-to-use-claude-code-like-the-people-who-built-it" target="_blank">Every.to: How to use Claude Code like the people who built it</a>.</p>
+        <p><strong>Course:</strong> <a href="https://anthropic.skilljar.com/claude-code-in-action" target="_blank">Anthropic Academy: Claude Code in Action</a> (free, with certificate).</p>
+        <p><strong>Do:</strong> Install Claude Code. Create your first <code>CLAUDE.md</code>. Configure auto-accept mode. Make your first 10 AI-authored commits. Practice the Autonomous Loop on a small feature.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-phase">Week 3-4 &mdash; Workflow Mastery</div>
+        <h3>Team Practices & Context Engineering</h3>
+        <p><strong>Read:</strong> <a href="https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf" target="_blank">How Anthropic Teams Use Claude Code (22-page PDF)</a>. <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">Effective context engineering for AI agents</a>. <a href="https://www.anthropic.com/engineering/claude-think-tool" target="_blank">The "think" tool</a>.</p>
+        <p><strong>Listen:</strong> <a href="https://www.latent.space/p/claude-code" target="_blank">Latent Space: Claude Code architecture</a>. <a href="https://www.lennysnewsletter.com/p/head-of-claude-code-what-happens" target="_blank">Lenny's Podcast: Head of Claude Code</a>.</p>
+        <p><strong>Do:</strong> Practice the slot machine workflow, TDD with Claude, and try-and-rollback patterns. Target 3-5 PRs/day. Build custom slash commands for your recurring tasks. Implement prompt caching in your API calls.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-phase">Week 5-6 &mdash; MCP & Tool Design</div>
+        <h3>Model Context Protocol & Agent Tool Interfaces</h3>
+        <p><strong>Read:</strong> <a href="https://www.anthropic.com/news/model-context-protocol" target="_blank">Introducing the Model Context Protocol</a>. <a href="https://www.anthropic.com/engineering/writing-tools-for-agents" target="_blank">Writing effective tools for agents</a>. <a href="https://www.anthropic.com/engineering/advanced-tool-use" target="_blank">Advanced tool use on Claude Developer Platform</a>.</p>
+        <p><strong>Course:</strong> <a href="https://anthropic.skilljar.com/introduction-to-model-context-protocol" target="_blank">Anthropic Academy: Introduction to MCP</a> + <a href="https://anthropic.skilljar.com/model-context-protocol-advanced-topics" target="_blank">MCP Advanced Topics</a>.</p>
+        <p><strong>Do:</strong> Build your first MCP server for an internal tool (database, API, docs). Study the <a href="https://modelcontextprotocol.io" target="_blank">MCP specification</a>. Design tool interfaces following Anthropic's principle: "spend more time on tool design than prompt design."</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-phase">Week 7-8 &mdash; Harness Design</div>
+        <h3>Build Your First Agent Harness</h3>
+        <p><strong>Read:</strong> <a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank">Effective harnesses for long-running agents</a>. <a href="https://www.anthropic.com/engineering/harness-design-long-running-apps" target="_blank">Harness design for long-running application development</a>.</p>
+        <p><strong>Study:</strong> <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Demystifying evals for AI agents</a>. <a href="https://www.anthropic.com/engineering/infrastructure-noise" target="_blank">Quantifying infrastructure noise in evals</a>.</p>
+        <p><strong>Do:</strong> Implement a two-agent system (Initializer + Coding Agent) for a medium feature. Create your first eval suite (20-50 tasks from real failures). Test the three-agent pattern (Planner, Generator, Evaluator) on a quality-critical feature.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-phase">Week 9-10 &mdash; Safety & Multi-Agent</div>
+        <h3>Parallel Agents & Safety-Aware Development</h3>
+        <p><strong>Read:</strong> <a href="https://www.anthropic.com/engineering/building-c-compiler" target="_blank">Building a C compiler with parallel Claudes</a>. <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">How we built our multi-agent research system</a>. <a href="https://www.anthropic.com/engineering/building-agents-with-the-claude-agent-sdk" target="_blank">Building agents with the Claude Agent SDK</a>.</p>
+        <p><strong>Study (safety):</strong> <a href="https://arxiv.org/abs/2212.08073" target="_blank">Constitutional AI paper</a>. <a href="https://arxiv.org/abs/2401.05566" target="_blank">Sleeper Agents paper</a>. <a href="https://www.anthropic.com/engineering/claude-code-sandboxing" target="_blank">Claude Code sandboxing</a>.</p>
+        <p><strong>Do:</strong> Set up parallel agent execution with Docker containers or git worktrees. Build a code migration using orchestrator-workers. Implement sandboxing for your agent workflows. Configure <a href="https://github.com/anthropics/claude-code-action" target="_blank">claude-code-action</a> for your CI pipeline.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-phase">Week 11-12 &mdash; Scale & Measure</div>
+        <h3>Team Rollout, Remote Dev & Metrics</h3>
+        <p><strong>Read:</strong> <a href="https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic" target="_blank">How AI Is Transforming Work at Anthropic</a> (internal research). <a href="https://www.anthropic.com/research/impact-software-development" target="_blank">AI's Impact on Software Development</a> (economic index). <a href="https://coder.com/blog/inside-anthropics-ai-first-development" target="_blank">Inside Anthropic's AI-First Development</a>.</p>
+        <p><strong>Course:</strong> <a href="https://anthropic.skilljar.com/introduction-to-subagents" target="_blank">Anthropic Academy: Introduction to Subagents</a>. <a href="https://anthropic.skilljar.com/introduction-to-agent-skills" target="_blank">Introduction to Agent Skills</a>.</p>
+        <p><strong>Do:</strong> Set up Coder or similar remote dev environments. Create team-specific CLAUDE.md files and shared slash commands. Implement the <a href="https://github.com/anthropics/claude-code-monitoring-guide" target="_blank">Claude Code monitoring guide</a> for ROI measurement. Track: PRs/engineer/day, AI-authored code %, time-to-ship, eval pass rates.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 12 ACADEMY -->
+<!-- ============================================================ -->
+<section id="academy">
+  <div class="container">
+    <div class="section-header">
+      <h4>12 &mdash; Anthropic Academy & Learning</h4>
+      <h2>Free Official Courses & Webinars</h2>
+    </div>
+
+    <div class="subsection">
+      <h3>Anthropic Academy Courses (Free, with Certificates)</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem;">All courses available at <a href="https://anthropic.skilljar.com" target="_blank">anthropic.skilljar.com</a></p>
+      <div class="card-grid">
+        <div class="card">
+          <span class="tag tag-accent">Essential</span>
+          <h3>Claude Code in Action</h3>
+          <p>Hands-on course covering Claude Code workflows, slash commands, and agent patterns.</p>
+          <p><a href="https://anthropic.skilljar.com/claude-code-in-action" target="_blank">Take course &rarr;</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-blue">Foundation</span>
+          <h3>Building with the Claude API</h3>
+          <p>API fundamentals: tool use, streaming, structured outputs, prompt caching.</p>
+          <p><a href="https://anthropic.skilljar.com/claude-with-the-anthropic-api" target="_blank">Take course &rarr;</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-green">MCP</span>
+          <h3>Introduction to MCP</h3>
+          <p>Model Context Protocol basics: architecture, server implementation, tool design.</p>
+          <p><a href="https://anthropic.skilljar.com/introduction-to-model-context-protocol" target="_blank">Take course &rarr;</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-green">MCP</span>
+          <h3>MCP: Advanced Topics</h3>
+          <p>Advanced server patterns, security, production deployment of MCP servers.</p>
+          <p><a href="https://anthropic.skilljar.com/model-context-protocol-advanced-topics" target="_blank">Take course &rarr;</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-purple">Agents</span>
+          <h3>Introduction to Subagents</h3>
+          <p>Sub-agent architecture, delegation patterns, parallel execution.</p>
+          <p><a href="https://anthropic.skilljar.com/introduction-to-subagents" target="_blank">Take course &rarr;</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-purple">Agents</span>
+          <h3>Introduction to Agent Skills</h3>
+          <p>Building and deploying Agent Skills for Claude Code.</p>
+          <p><a href="https://anthropic.skilljar.com/introduction-to-agent-skills" target="_blank">Take course &rarr;</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-yellow">Cowork</span>
+          <h3>Introduction to Claude Cowork</h3>
+          <p>The collaborative AI workspace for teams.</p>
+          <p><a href="https://anthropic.skilljar.com/introduction-to-claude-cowork" target="_blank">Take course &rarr;</a></p>
+        </div>
+        <div class="card">
+          <span class="tag tag-blue">Fundamentals</span>
+          <h3>Claude 101</h3>
+          <p>Core concepts, capabilities, and best practices for working with Claude.</p>
+          <p><a href="https://anthropic.skilljar.com/claude-101" target="_blank">Take course &rarr;</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Official Webinars</h3>
+      <div class="card" style="margin-bottom: 1rem;">
+        <table class="ref-table">
+          <thead><tr><th>Webinar</th><th>Focus</th></tr></thead>
+          <tbody>
+            <tr><td><a href="https://www.anthropic.com/webinars/claude-code-live" target="_blank">Claude Code Live: Origin Story, Demos, Best Practices</a></td><td>Overview & demos</td></tr>
+            <tr><td><a href="https://www.anthropic.com/webinars/claude-code-in-an-hour-a-developers-intro" target="_blank">Claude Code in an Hour: A Developer's Intro</a></td><td>Getting started</td></tr>
+            <tr><td><a href="https://www.anthropic.com/webinars/claude-code-advanced-patterns" target="_blank">Claude Code Advanced Patterns: Subagents, MCP, Scaling</a></td><td>Advanced patterns</td></tr>
+            <tr><td><a href="https://www.anthropic.com/webinars/claude-code-for-financial-services-boris-cherny" target="_blank">Claude Code for Financial Services (Boris Cherny)</a></td><td>Enterprise</td></tr>
+            <tr><td><a href="https://www.anthropic.com/webinars/claude-code-service-delivery" target="_blank">Claude Code for Service Delivery (Boris Cherny)</a></td><td>Enterprise</td></tr>
+            <tr><td><a href="https://www.anthropic.com/webinars/future-of-ai-at-work-introducing-cowork" target="_blank">The Future of AI at Work: Introducing Cowork</a></td><td>Collaboration</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>GitHub Learning Resources</h3>
+      <div class="card-grid">
+        <div class="card">
+          <h3><a href="https://github.com/anthropics/prompt-eng-interactive-tutorial" target="_blank">Prompt Engineering Tutorial</a></h3>
+          <p>9-chapter interactive tutorial with exercises. Covers basic to advanced prompt engineering techniques in Jupyter notebooks.</p>
+        </div>
+        <div class="card">
+          <h3><a href="https://github.com/anthropics/courses" target="_blank">Anthropic Courses</a></h3>
+          <p>Educational courses as Jupyter notebooks. Covers tool use, RAG, agentic patterns, and more.</p>
+        </div>
+        <div class="card">
+          <h3><a href="https://github.com/anthropics/claude-cookbooks" target="_blank">Claude Cookbooks</a></h3>
+          <p>Recipes for sub-agents, PDFs, evals, JSON mode, caching, tool use, RAG, and common integration patterns.</p>
+        </div>
+        <div class="card">
+          <h3><a href="https://github.com/anthropics/claude-quickstarts" target="_blank">Claude Quickstarts</a></h3>
+          <p>Starter projects for building deployable applications with the Claude API.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Published Guides (PDFs)</h3>
+      <ul class="checklist">
+        <li><a href="https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf" target="_blank">How Anthropic Teams Use Claude Code</a> (22 pages) &mdash; Real internal practices from 10 teams</li>
+        <li><a href="https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf" target="_blank">The Complete Guide to Building Skills for Claude</a> &mdash; Agent skills development guide</li>
+        <li><a href="https://resources.anthropic.com/hubfs/2026%20Agentic%20Coding%20Trends%20Report.pdf" target="_blank">2026 Agentic Coding Trends Report</a> &mdash; Industry trends and data</li>
+        <li><a href="https://www-cdn.anthropic.com/62df988c101af71291b06843b63d39bbd600bed8.pdf" target="_blank">6 Techniques for Effective Prompt Engineering</a> &mdash; Concise prompt engineering guide</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 13 REFERENCES -->
+<!-- ============================================================ -->
+<section id="references">
+  <div class="container">
+    <div class="section-header">
+      <h4>13 &mdash; Complete References</h4>
+      <h2>100+ Official Sources</h2>
+      <p>Every claim in this guide is traceable to these sources. Organized by category for study priority.</p>
+    </div>
+
+    <!-- Engineering Blog -->
+    <div class="subsection">
+      <h3>Anthropic Engineering Blog (23 posts)</h3>
+      <div class="card">
+        <table class="ref-table">
+          <thead><tr><th style="width:90px">Date</th><th>Article</th><th style="width:90px">Topic</th></tr></thead>
+          <tbody>
+            <tr><td>Apr 2026</td><td><a href="https://www.anthropic.com/engineering/infrastructure-noise" target="_blank">Quantifying infrastructure noise in agentic coding evals</a></td><td><span class="tag tag-red">Evals</span></td></tr>
+            <tr><td>Mar 2026</td><td><a href="https://www.anthropic.com/engineering/claude-code-auto-mode" target="_blank">Claude Code auto mode: safer way to skip permissions</a></td><td><span class="tag tag-green">Tooling</span></td></tr>
+            <tr><td>Mar 2026</td><td><a href="https://www.anthropic.com/engineering/harness-design-long-running-apps" target="_blank">Harness design for long-running application development</a></td><td><span class="tag tag-purple">Harness</span></td></tr>
+            <tr><td>Mar 2026</td><td><a href="https://www.anthropic.com/engineering/eval-awareness-browsecomp" target="_blank">Eval awareness in Claude Opus 4.6's BrowseComp performance</a></td><td><span class="tag tag-red">Evals</span></td></tr>
+            <tr><td>Feb 2026</td><td><a href="https://www.anthropic.com/engineering/building-c-compiler" target="_blank">Building a C compiler with a team of parallel Claudes</a></td><td><span class="tag tag-yellow">Multi-Agent</span></td></tr>
+            <tr><td>Jan 2026</td><td><a href="https://www.anthropic.com/engineering/building-agents-with-the-claude-agent-sdk" target="_blank">Building agents with the Claude Agent SDK</a></td><td><span class="tag tag-purple">Agents</span></td></tr>
+            <tr><td>Jan 2026</td><td><a href="https://www.anthropic.com/engineering/AI-resistant-technical-evaluations" target="_blank">Designing AI-resistant technical evaluations</a></td><td><span class="tag tag-red">Evals</span></td></tr>
+            <tr><td>Jan 2026</td><td><a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Demystifying evals for AI agents</a></td><td><span class="tag tag-red">Evals</span></td></tr>
+            <tr><td>Nov 2025</td><td><a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank">Effective harnesses for long-running agents</a></td><td><span class="tag tag-purple">Harness</span></td></tr>
+            <tr><td>Nov 2025</td><td><a href="https://www.anthropic.com/engineering/advanced-tool-use" target="_blank">Introducing advanced tool use on Claude Developer Platform</a></td><td><span class="tag tag-green">Tooling</span></td></tr>
+            <tr><td>Nov 2025</td><td><a href="https://www.anthropic.com/engineering/code-execution-with-mcp" target="_blank">Code execution with MCP: Building more efficient agents</a></td><td><span class="tag tag-green">MCP</span></td></tr>
+            <tr><td>Oct 2025</td><td><a href="https://www.anthropic.com/engineering/claude-code-sandboxing" target="_blank">Beyond permission prompts: Claude Code sandboxing</a></td><td><span class="tag tag-red">Security</span></td></tr>
+            <tr><td>Sep 2025</td><td><a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">Effective context engineering for AI agents</a></td><td><span class="tag tag-blue">Context</span></td></tr>
+            <tr><td>Sep 2025</td><td><a href="https://www.anthropic.com/engineering/a-postmortem-of-three-recent-issues" target="_blank">A postmortem of three recent issues</a></td><td><span class="tag tag-red">Ops</span></td></tr>
+            <tr><td>Sep 2025</td><td><a href="https://www.anthropic.com/engineering/writing-tools-for-agents" target="_blank">Writing effective tools for agents &mdash; with agents</a></td><td><span class="tag tag-green">Tooling</span></td></tr>
+            <tr><td>Jun 2025</td><td><a href="https://www.anthropic.com/engineering/desktop-extensions" target="_blank">Desktop Extensions: One-click MCP server installation</a></td><td><span class="tag tag-green">MCP</span></td></tr>
+            <tr><td>Jun 2025</td><td><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">How we built our multi-agent research system</a></td><td><span class="tag tag-yellow">Multi-Agent</span></td></tr>
+            <tr><td>Apr 2025</td><td><a href="https://www.anthropic.com/engineering/claude-code-best-practices" target="_blank">Claude Code: Best practices for agentic coding</a></td><td><span class="tag tag-green">Tooling</span></td></tr>
+            <tr><td>Mar 2025</td><td><a href="https://www.anthropic.com/engineering/claude-think-tool" target="_blank">The "think" tool for complex tool use situations</a></td><td><span class="tag tag-blue">Context</span></td></tr>
+            <tr><td>Jan 2025</td><td><a href="https://www.anthropic.com/engineering/swe-bench-sonnet" target="_blank">Raising the bar on SWE-bench Verified</a></td><td><span class="tag tag-red">Evals</span></td></tr>
+            <tr><td>Dec 2024</td><td><a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">Building effective agents</a></td><td><span class="tag tag-accent">Foundational</span></td></tr>
+            <tr><td>Sep 2024</td><td><a href="https://www.anthropic.com/engineering/contextual-retrieval" target="_blank">Introducing Contextual Retrieval</a></td><td><span class="tag tag-blue">RAG</span></td></tr>
+            <tr><td>~2026</td><td><a href="https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills" target="_blank">Equipping agents for the real world with Agent Skills</a></td><td><span class="tag tag-purple">Agents</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Research Papers -->
+    <div class="subsection">
+      <h3>Research Papers (with arxiv IDs)</h3>
+      <div class="card">
+        <table class="ref-table">
+          <thead><tr><th style="width:120px">arxiv / URL</th><th>Paper</th><th style="width:80px">Year</th></tr></thead>
+          <tbody>
+            <tr><td><a href="https://arxiv.org/abs/2212.08073" target="_blank">2212.08073</a></td><td><strong>Constitutional AI: Harmlessness from AI Feedback</strong> &mdash; Bai, Kadavath, Kundu, Askell et al.</td><td>2022</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2204.05862" target="_blank">2204.05862</a></td><td><strong>Training a Helpful and Harmless Assistant with RLHF</strong> &mdash; Bai, Jones, Ndousse, Askell et al.</td><td>2022</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2001.08361" target="_blank">2001.08361</a></td><td><strong>Scaling Laws for Neural Language Models</strong> &mdash; Kaplan, McCandlish, Henighan, Brown et al.</td><td>2020</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2401.05566" target="_blank">2401.05566</a></td><td><strong>Sleeper Agents: Training Deceptive LLMs that Persist Through Safety Training</strong> &mdash; Hubinger, Denison, Mu et al.</td><td>2024</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2412.14093" target="_blank">2412.14093</a></td><td><strong>Alignment Faking in Large Language Models</strong> &mdash; Greenblatt, Denison, Wright et al.</td><td>2024</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2410.21514" target="_blank">2410.21514</a></td><td><strong>Sabotage Evaluations for Frontier Models</strong> &mdash; Carlsmith et al. (code sabotage, sandbagging)</td><td>2024</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2209.10652" target="_blank">2209.10652</a></td><td><strong>Toy Models of Superposition</strong> &mdash; Elhage, Hume, Olsson et al.</td><td>2022</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2305.04388" target="_blank">2305.04388</a></td><td><strong>Language Models Don't Always Say What They Think</strong> &mdash; Turpin, Michael, Perez, Bowman (NeurIPS 2023)</td><td>2023</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2505.05410" target="_blank">2505.05410</a></td><td><strong>Reasoning Models Don't Always Say What They Think</strong> &mdash; Chen, Benton et al.</td><td>2025</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2308.03296" target="_blank">2308.03296</a></td><td><strong>Studying LLM Generalization with Influence Functions</strong> &mdash; Grosse, Bae, Anil et al.</td><td>2023</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2209.07858" target="_blank">2209.07858</a></td><td><strong>Red Teaming Language Models to Reduce Harms</strong> &mdash; Ganguli, Lovitt, Kernion, Askell et al.</td><td>2022</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2212.09251" target="_blank">2212.09251</a></td><td><strong>Discovering LM Behaviors with Model-Written Evaluations</strong> &mdash; Perez et al. (ACL 2023)</td><td>2022</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2302.07459" target="_blank">2302.07459</a></td><td><strong>The Capacity for Moral Self-Correction in Large Language Models</strong> &mdash; Ganguli, Askell et al.</td><td>2023</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2310.13548" target="_blank">2310.13548</a></td><td><strong>Towards Understanding Sycophancy in Language Models</strong> &mdash; Tong et al.</td><td>2023</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2501.18837" target="_blank">2501.18837</a></td><td><strong>Constitutional Classifiers: Defending Against Universal Jailbreaks</strong></td><td>2025</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2601.04603" target="_blank">2601.04603</a></td><td><strong>Constitutional Classifiers++: Production-Grade Defenses</strong></td><td>2026</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2511.18397" target="_blank">2511.18397</a></td><td><strong>Natural Emergent Misalignment from Reward Hacking</strong> &mdash; includes Claude Code sabotage</td><td>2025</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2510.07192" target="_blank">2510.07192</a></td><td><strong>Poisoning Attacks on LLMs Require Near-Constant Poison Samples</strong></td><td>2025</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2503.10965" target="_blank">2503.10965</a></td><td><strong>Auditing Language Models for Hidden Objectives</strong></td><td>2025</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2207.05221" target="_blank">2207.05221</a></td><td><strong>Language Models (Mostly) Know What They Know</strong> &mdash; Kadavath, Conerly, Askell et al.</td><td>2022</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2112.00861" target="_blank">2112.00861</a></td><td><strong>A General Language Assistant as a Laboratory for Alignment</strong> &mdash; Askell, Bai et al.</td><td>2021</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/1606.06565" target="_blank">1606.06565</a></td><td><strong>Concrete Problems in AI Safety</strong> &mdash; Amodei, Olah, Steinhardt et al. (pre-Anthropic)</td><td>2016</td></tr>
+            <tr><td><a href="https://arxiv.org/html/2601.20245v1" target="_blank">2601.20245</a></td><td><strong>How AI Impacts Skill Formation</strong> &mdash; 17% lower scores with AI assistance</td><td>2026</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Interpretability -->
+    <div class="subsection">
+      <h3>Transformer Circuits Thread (transformer-circuits.pub)</h3>
+      <div class="card">
+        <table class="ref-table">
+          <thead><tr><th>Publication</th><th style="width:80px">Year</th></tr></thead>
+          <tbody>
+            <tr><td><a href="https://transformer-circuits.pub/2021/framework/index.html" target="_blank">A Mathematical Framework for Transformer Circuits</a> &mdash; Elhage, Nanda, Olsson et al.</td><td>2021</td></tr>
+            <tr><td><a href="https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html" target="_blank">In-Context Learning and Induction Heads</a> &mdash; Olsson, Elhage, Nanda et al.</td><td>2022</td></tr>
+            <tr><td><a href="https://transformer-circuits.pub/2022/toy_model/index.html" target="_blank">Toy Models of Superposition</a> &mdash; Elhage, Hume, Olsson et al.</td><td>2022</td></tr>
+            <tr><td><a href="https://transformer-circuits.pub/2023/monosemantic-features/index.html" target="_blank">Towards Monosemanticity: Dictionary Learning</a> &mdash; Bricken, Templeton, Batson et al.</td><td>2023</td></tr>
+            <tr><td><a href="https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html" target="_blank">Scaling Monosemanticity: Features from Claude 3 Sonnet</a> &mdash; Templeton et al.</td><td>2024</td></tr>
+            <tr><td><a href="https://transformer-circuits.pub/2024/crosscoders/index.html" target="_blank">Sparse Crosscoders for Cross-Layer Features and Model Diffing</a></td><td>2024</td></tr>
+            <tr><td><a href="https://transformer-circuits.pub/2025/attribution-graphs/methods.html" target="_blank">Circuit Tracing: Revealing Computational Graphs in LMs</a> &mdash; Ameisen et al.</td><td>2025</td></tr>
+            <tr><td><a href="https://transformer-circuits.pub/2025/attribution-graphs/biology.html" target="_blank">On the Biology of a Large Language Model</a> &mdash; Lindsey et al.</td><td>2025</td></tr>
+            <tr><td><a href="https://transformer-circuits.pub/2025/introspection/index.html" target="_blank">Emergent Introspective Awareness in LLMs</a> &mdash; Lindsey</td><td>2025</td></tr>
+            <tr><td><a href="https://transformer-circuits.pub/2026/emotions/index.html" target="_blank">Emotion Concepts and Their Function in a LLM</a> &mdash; Sofroniew et al.</td><td>2026</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Official Research Reports -->
+    <div class="subsection">
+      <h3>Official Research Reports & Economic Index</h3>
+      <div class="card">
+        <table class="ref-table">
+          <thead><tr><th>Report</th></tr></thead>
+          <tbody>
+            <tr><td><a href="https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic" target="_blank">How AI Is Transforming Work at Anthropic</a> &mdash; 132 engineers surveyed, 200K transcripts analyzed</td></tr>
+            <tr><td><a href="https://www.anthropic.com/research/impact-software-development" target="_blank">AI's Impact on Software Development</a> (Economic Index) &mdash; 500K coding interactions analyzed</td></tr>
+            <tr><td><a href="https://www.anthropic.com/research/AI-assistance-coding-skills" target="_blank">How AI Assistance Impacts Coding Skills</a></td></tr>
+            <tr><td><a href="https://www.anthropic.com/research/estimating-productivity-gains" target="_blank">Estimating AI Productivity Gains from Claude Conversations</a></td></tr>
+            <tr><td><a href="https://www.anthropic.com/research/measuring-agent-autonomy" target="_blank">Measuring AI Agent Autonomy in Practice</a></td></tr>
+            <tr><td><a href="https://www.anthropic.com/research/economic-index-primitives" target="_blank">Anthropic Economic Index: Economic Primitives</a></td></tr>
+            <tr><td><a href="https://www.anthropic.com/research/economic-policy-responses" target="_blank">Preparing for AI's Economic Impact: Policy Responses</a></td></tr>
+            <tr><td><a href="https://www.anthropic.com/research/labor-market-impacts" target="_blank">Labor Market Impacts of AI: A New Measure</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Model Cards -->
+    <div class="subsection">
+      <h3>Model Cards & System Cards</h3>
+      <div class="card">
+        <table class="ref-table">
+          <thead><tr><th>Model</th><th style="width:80px">Date</th><th>Link</th></tr></thead>
+          <tbody>
+            <tr><td>Claude 3 Family (Opus, Sonnet, Haiku)</td><td>Mar 2024</td><td><a href="https://assets.anthropic.com/m/61e7d27f8c8f5919/original/Claude-3-Model-Card.pdf" target="_blank">PDF</a></td></tr>
+            <tr><td>Claude 3.5 Sonnet</td><td>Jun 2024</td><td><a href="https://www-cdn.anthropic.com/fed9cc193a14b84131812372d8d5857f8f304c52/Model_Card_Claude_3_Addendum.pdf" target="_blank">PDF</a></td></tr>
+            <tr><td>Claude 3.7 Sonnet</td><td>Feb 2025</td><td><a href="https://www.anthropic.com/claude-3-7-sonnet-system-card" target="_blank">System Card</a></td></tr>
+            <tr><td>Claude Opus 4 & Sonnet 4</td><td>May 2025</td><td><a href="https://www-cdn.anthropic.com/4263b940cabb546aa0e3283f35b686f4f3b2ff47.pdf" target="_blank">PDF</a></td></tr>
+            <tr><td>Claude Sonnet 4.6</td><td>Feb 2026</td><td><a href="https://anthropic.com/claude-sonnet-4-6-system-card" target="_blank">System Card</a></td></tr>
+            <tr><td>Claude Opus 4.6</td><td>Feb 2026</td><td><a href="https://anthropic.com/claude-opus-4-6-system-card" target="_blank">System Card</a></td></tr>
+            <tr><td>All System Cards Index</td><td>&mdash;</td><td><a href="https://www.anthropic.com/system-cards" target="_blank">Index Page</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Podcasts & Talks -->
+    <div class="subsection">
+      <h3>Podcasts, Talks & Interviews</h3>
+      <div class="card">
+        <table class="ref-table">
+          <thead><tr><th style="width:80px">Type</th><th>Reference</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag tag-yellow">Conf</span></td><td><a href="https://www.anthropic.com/events/code-with-claude-2025" target="_blank">Code with Claude 2025</a> &mdash; SF, London, Tokyo. 18 session recordings on YouTube.</td></tr>
+            <tr><td><span class="tag tag-blue">Pod</span></td><td><a href="https://www.lennysnewsletter.com/p/head-of-claude-code-what-happens" target="_blank">Lenny's Podcast &mdash; Boris Cherny: Head of Claude Code</a>. 200% productivity increase, 4% of GitHub commits.</td></tr>
+            <tr><td><span class="tag tag-blue">Pod</span></td><td><a href="https://www.latent.space/p/claude-code" target="_blank">Latent Space &mdash; Claude Code: Anthropic's Agent in Your Terminal</a>. Architecture, agentic search vs RAG.</td></tr>
+            <tr><td><span class="tag tag-blue">Pod</span></td><td><a href="https://newsletter.pragmaticengineer.com/p/building-claude-code-with-boris-cherny" target="_blank">Pragmatic Engineer &mdash; Building Claude Code with Boris Cherny</a> (<a href="https://open.spotify.com/episode/3fuz0q5vlIQE1DB6JmKZ8B" target="_blank">Spotify</a> / <a href="https://podcasts.apple.com/us/podcast/building-claude-code-with-boris-cherny/id1769051199?i=1000753093675" target="_blank">Apple</a>)</td></tr>
+            <tr><td><span class="tag tag-blue">Pod</span></td><td><a href="https://www.ycombinator.com/library/NJ-inside-claude-code-with-its-creator-boris-cherny" target="_blank">Y Combinator Lightcone &mdash; Inside Claude Code with Boris Cherny</a></td></tr>
+            <tr><td><span class="tag tag-blue">Pod</span></td><td><a href="https://www.developing.dev/p/boris-cherny-creator-of-claude-code" target="_blank">Developing Dev &mdash; Boris Cherny on How His Career Grew</a></td></tr>
+            <tr><td><span class="tag tag-blue">Pod</span></td><td><a href="https://lexfridman.com/dario-amodei/" target="_blank">Lex Fridman #452 &mdash; Dario Amodei: Anthropic CEO</a> (5+ hrs, includes Amanda Askell & Chris Olah)</td></tr>
+            <tr><td><span class="tag tag-blue">Pod</span></td><td><a href="https://www.dwarkesh.com/p/dario-amodei" target="_blank">Dwarkesh Patel &mdash; Dario Amodei on $10B Models & AGI</a></td></tr>
+            <tr><td><span class="tag tag-blue">Pod</span></td><td><a href="https://www.dwarkesh.com/p/dario-amodei-2" target="_blank">Dwarkesh Patel &mdash; Dario Amodei: "We are near the end of the exponential"</a> (Feb 2026)</td></tr>
+            <tr><td><span class="tag tag-blue">Pod</span></td><td><a href="https://80000hours.org/podcast/episodes/chris-olah-interpretability-research/" target="_blank">80,000 Hours &mdash; Chris Olah: What's Going On Inside Neural Networks</a></td></tr>
+            <tr><td><span class="tag tag-green">Art</span></td><td><a href="https://newsletter.pragmaticengineer.com/p/how-claude-code-is-built" target="_blank">Pragmatic Engineer &mdash; How Claude Code is Built</a> (tech stack, team, velocity deep-dive)</td></tr>
+            <tr><td><span class="tag tag-green">Art</span></td><td><a href="https://every.to/podcast/how-to-use-claude-code-like-the-people-who-built-it" target="_blank">Every.to &mdash; How to Use Claude Code Like the People Who Built It</a></td></tr>
+            <tr><td><span class="tag tag-green">Art</span></td><td><a href="https://coder.com/blog/inside-anthropics-ai-first-development" target="_blank">Coder Blog &mdash; Inside Anthropic's AI-First Development</a></td></tr>
+            <tr><td><span class="tag tag-green">Art</span></td><td><a href="https://fortune.com/2026/01/29/100-percent-of-code-at-anthropic-and-openai-is-now-ai-written-boris-cherny-roon/" target="_blank">Fortune &mdash; 100% of Code at Anthropic Is Now AI-Written</a></td></tr>
+            <tr><td><span class="tag tag-green">Art</span></td><td><a href="https://aws.amazon.com/blogs/containers/under-the-hood-amazon-eks-ultra-scale-clusters/" target="_blank">AWS Blog &mdash; Amazon EKS Ultra Scale (Anthropic infra)</a></td></tr>
+            <tr><td><span class="tag tag-accent">Essay</span></td><td><a href="https://www.darioamodei.com/essay/machines-of-loving-grace" target="_blank">Dario Amodei: Machines of Loving Grace</a> (Oct 2024)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Official Documentation -->
+    <div class="subsection">
+      <h3>Official Documentation</h3>
+      <div class="card">
+        <table class="ref-table">
+          <thead><tr><th>Resource</th><th>URL</th></tr></thead>
+          <tbody>
+            <tr><td>Documentation Home</td><td><a href="https://docs.anthropic.com" target="_blank">docs.anthropic.com</a></td></tr>
+            <tr><td>Tool Use / Function Calling</td><td><a href="https://docs.anthropic.com/en/docs/build-with-claude/tool-use" target="_blank">docs.anthropic.com/.../tool-use</a></td></tr>
+            <tr><td>Extended Thinking</td><td><a href="https://platform.claude.com/docs/en/build-with-claude/extended-thinking" target="_blank">platform.claude.com/.../extended-thinking</a></td></tr>
+            <tr><td>Prompt Caching</td><td><a href="https://platform.claude.com/docs/en/build-with-claude/prompt-caching" target="_blank">platform.claude.com/.../prompt-caching</a></td></tr>
+            <tr><td>Computer Use Tool</td><td><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool" target="_blank">platform.claude.com/.../computer-use-tool</a></td></tr>
+            <tr><td>Prompt Engineering Guide</td><td><a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank">docs.anthropic.com/.../prompt-engineering</a></td></tr>
+            <tr><td>Agent SDK Overview</td><td><a href="https://platform.claude.com/docs/en/agent-sdk/overview" target="_blank">platform.claude.com/.../agent-sdk/overview</a></td></tr>
+            <tr><td>Claude Code Memory</td><td><a href="https://code.claude.com/docs/en/memory" target="_blank">code.claude.com/.../memory</a></td></tr>
+            <tr><td>Claude Code Hooks</td><td><a href="https://code.claude.com/docs/en/hooks" target="_blank">code.claude.com/.../hooks</a></td></tr>
+            <tr><td>Claude Code Skills</td><td><a href="https://code.claude.com/docs/en/skills" target="_blank">code.claude.com/.../skills</a></td></tr>
+            <tr><td>Claude Code Subagents</td><td><a href="https://code.claude.com/docs/en/sub-agents" target="_blank">code.claude.com/.../sub-agents</a></td></tr>
+            <tr><td>GitHub Actions Integration</td><td><a href="https://code.claude.com/docs/en/github-actions" target="_blank">code.claude.com/.../github-actions</a></td></tr>
+            <tr><td>MCP Specification (2025-11-25)</td><td><a href="https://modelcontextprotocol.io/specification/2025-11-25" target="_blank">modelcontextprotocol.io/specification</a></td></tr>
+            <tr><td>Agent Skills Open Standard</td><td><a href="https://agentskills.io" target="_blank">agentskills.io</a></td></tr>
+            <tr><td>Responsible Scaling Policy v3.0</td><td><a href="https://anthropic.com/responsible-scaling-policy/rsp-v3-0" target="_blank">anthropic.com/rsp-v3-0</a></td></tr>
+            <tr><td>Transparency Hub</td><td><a href="https://www.anthropic.com/transparency" target="_blank">anthropic.com/transparency</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Additional Sources -->
+    <div class="subsection">
+      <h3>Additional Technical Sources</h3>
+      <div class="card">
+        <table class="ref-table">
+          <thead><tr><th style="width:80px">Type</th><th>Reference</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag tag-accent">Site</span></td><td><a href="https://howborisusesclaudecode.com" target="_blank">How Boris Uses Claude Code</a> &mdash; Boris Cherny's exact workflow, session management, parallel instances</td></tr>
+            <tr><td><span class="tag tag-green">Art</span></td><td><a href="https://www.infoq.com/news/2026/01/claude-code-creator-workflow/" target="_blank">InfoQ: Inside the Development Workflow of Claude Code's Creator</a></td></tr>
+            <tr><td><span class="tag tag-purple">Paper</span></td><td><a href="https://openreview.net/pdf?id=a7Qa4CcHak" target="_blank">Terminal-Bench: Benchmarking LLM Agents</a> (ICLR 2026 conference paper)</td></tr>
+            <tr><td><span class="tag tag-green">Art</span></td><td><a href="https://www.anthropic.com/research/prompt-injection-defenses" target="_blank">Mitigating Prompt Injections in Browser Use</a> (1% ASR defense)</td></tr>
+            <tr><td><span class="tag tag-green">Art</span></td><td><a href="https://www.anthropic.com/research/confidential-inference-trusted-vms" target="_blank">Confidential Inference via Trusted Virtual Machines</a></td></tr>
+            <tr><td><span class="tag tag-green">Art</span></td><td><a href="https://www.anthropic.com/research/building-ai-cyber-defenders" target="_blank">Building AI for Cyber Defenders</a></td></tr>
+            <tr><td><span class="tag tag-accent">Site</span></td><td><a href="https://www.anthropic.com/learn" target="_blank">Anthropic Learning Resources Hub</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GitHub Repos -->
+    <div class="subsection">
+      <h3>Key GitHub Repositories (github.com/anthropics)</h3>
+      <div class="card">
+        <table class="ref-table">
+          <thead><tr><th>Repository</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><a href="https://github.com/anthropics/claude-code" target="_blank"><code>claude-code</code></a></td><td>The agentic coding tool</td></tr>
+            <tr><td><a href="https://github.com/anthropics/claude-code-action" target="_blank"><code>claude-code-action</code></a></td><td>GitHub Actions integration</td></tr>
+            <tr><td><a href="https://github.com/anthropics/claude-code-security-review" target="_blank"><code>claude-code-security-review</code></a></td><td>AI-powered security review GitHub Action</td></tr>
+            <tr><td><a href="https://github.com/anthropics/claude-code-monitoring-guide" target="_blank"><code>claude-code-monitoring-guide</code></a></td><td>ROI measurement guide</td></tr>
+            <tr><td><a href="https://github.com/anthropics/claude-agent-sdk-python" target="_blank"><code>claude-agent-sdk-python</code></a></td><td>Python Agent SDK</td></tr>
+            <tr><td><a href="https://github.com/anthropics/claude-agent-sdk-typescript" target="_blank"><code>claude-agent-sdk-typescript</code></a></td><td>TypeScript Agent SDK</td></tr>
+            <tr><td><a href="https://github.com/anthropics/skills" target="_blank"><code>skills</code></a></td><td>Public Agent Skills repository</td></tr>
+            <tr><td><a href="https://github.com/anthropics/anthropic-sdk-python" target="_blank"><code>anthropic-sdk-python</code></a></td><td>Official Python SDK</td></tr>
+            <tr><td><a href="https://github.com/anthropics/anthropic-sdk-typescript" target="_blank"><code>anthropic-sdk-typescript</code></a></td><td>Official TypeScript SDK</td></tr>
+            <tr><td><a href="https://github.com/anthropics/claudes-c-compiler" target="_blank"><code>claudes-c-compiler</code></a></td><td>100K-line C compiler built by 16 parallel Claudes</td></tr>
+            <tr><td><a href="https://github.com/anthropics/claude-cookbooks" target="_blank"><code>claude-cookbooks</code></a></td><td>Recipes for common integration patterns</td></tr>
+            <tr><td><a href="https://github.com/anthropics/courses" target="_blank"><code>courses</code></a></td><td>Educational courses (Jupyter notebooks)</td></tr>
+            <tr><td><a href="https://github.com/anthropics/prompt-eng-interactive-tutorial" target="_blank"><code>prompt-eng-interactive-tutorial</code></a></td><td>9-chapter prompt engineering tutorial</td></tr>
+            <tr><td><a href="https://github.com/anthropics/evals" target="_blank"><code>evals</code></a></td><td>Evaluation framework</td></tr>
+            <tr><td><a href="https://github.com/anthropics/hh-rlhf" target="_blank"><code>hh-rlhf</code></a></td><td>Human preference data for RLHF paper</td></tr>
+            <tr><td><a href="https://github.com/anthropics/claude-constitution" target="_blank"><code>claude-constitution</code></a></td><td>Claude's values and behavior document</td></tr>
+            <tr><td><a href="https://github.com/modelcontextprotocol/modelcontextprotocol" target="_blank"><code>modelcontextprotocol</code></a></td><td>MCP specification (separate org)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- FOOTER -->
+<!-- ============================================================ -->
+<footer>
+  <div class="container">
+    <p>Compiled from official Anthropic publications, 23 engineering blog posts, 23+ arxiv papers, 10 Transformer Circuits publications, 16+ podcasts/articles, 16 documentation pages, 8 Academy courses, and verified journalism.</p>
+    <p style="margin-top: 0.5rem;">Primary sources: <a href="https://www.anthropic.com/engineering" target="_blank">anthropic.com/engineering</a> &middot; <a href="https://www.anthropic.com/research" target="_blank">anthropic.com/research</a> &middot; <a href="https://transformer-circuits.pub" target="_blank">transformer-circuits.pub</a> &middot; <a href="https://code.claude.com/docs" target="_blank">code.claude.com/docs</a> &middot; <a href="https://platform.claude.com/docs" target="_blank">platform.claude.com/docs</a></p>
+    <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.78rem;">Last updated: April 2026. Not affiliated with Anthropic. All sources verifiable at linked URLs.</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('nav a').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('nav a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -80% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

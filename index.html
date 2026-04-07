@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>How Anthropic Engineers Build Software — A Deep Study Guide</title>
+  <title>How Anthropic engineers build software — a deep study guide</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -827,7 +827,7 @@
 <header class="hero">
   <div class="container">
     <div class="hero-eyebrow">Deep Study Guide / April 2026</div>
-    <h1>How Anthropic Engineers<br><span>Build </span><span class="hero-word">Software</span><span class="cursor">_</span></h1>
+    <h1>How Anthropic engineers<br><span>build </span><span class="hero-word">software</span><span class="cursor">_</span></h1>
     <p class="hero-subtitle">
       A research-backed deep study on Anthropic's development workflows, agent harness design,
       infrastructure, interpretability research, and AI-first engineering culture &mdash; with 100+ official references.
@@ -865,18 +865,18 @@
 <nav>
   <div class="container">
     <input type="checkbox" id="nav-toggle" class="nav-toggle">
-    <label for="nav-toggle" class="nav-toggle-label">Navigate 16 Sections</label>
+    <label for="nav-toggle" class="nav-toggle-label">Navigate 16 sections</label>
     <div class="nav-links">
       <a href="#philosophy"><span class="nav-num">01</span> Philosophy</a>
       <a href="#stack"><span class="nav-num">02</span> Stack</a>
       <a href="#workflows"><span class="nav-num">03</span> Workflows</a>
       <a href="#harnesses"><span class="nav-num">04</span> Harnesses</a>
       <a href="#claudemd"><span class="nav-num">05</span> CLAUDE.md</a>
-      <a href="#boris"><span class="nav-num">06</span> Boris's Setup</a>
-      <a href="#context"><span class="nav-num">07</span> Context Eng.</a>
+      <a href="#boris"><span class="nav-num">06</span> Boris's setup</a>
+      <a href="#context"><span class="nav-num">07</span> Context eng.</a>
       <a href="#evals"><span class="nav-num">08</span> Evals</a>
       <a href="#teams"><span class="nav-num">09</span> Teams</a>
-      <a href="#sdk"><span class="nav-num">10</span> SDK & Agents</a>
+      <a href="#sdk"><span class="nav-num">10</span> SDK & agents</a>
       <a href="#mcp"><span class="nav-num">11</span> MCP</a>
       <a href="#safety"><span class="nav-num">12</span> Safety</a>
       <a href="#infra"><span class="nav-num">13</span> Infra</a>
@@ -893,14 +893,14 @@
 <section id="philosophy">
   <div class="container">
     <div class="section-header">
-      <h4>01 &mdash; Core Philosophy</h4>
-      <h2>Design Principles Behind Anthropic's Engineering</h2>
+      <h4>01 &mdash; Core philosophy</h4>
+      <h2>Design principles behind Anthropic's engineering</h2>
     </div>
 
     <div class="principle">
       <div class="principle-num">1</div>
       <div>
-        <h3>Do The Simple Thing First</h3>
+        <h3>Do the simple thing first</h3>
         <p>Context compaction is just asking Claude to summarize previous messages. The CLAUDE.md memory system is "the simplest thing that could work &mdash; it's a file that has some stuff." They abandoned vector-based RAG search (with Voyage embeddings) in favor of agentic search using <code>grep</code> and <code>glob</code>, which outperformed RAG "by a lot." Boris Cherny created ~20 distinct prototypes in two days for the todo list feature alone, preferring rapid iteration over upfront architecture.</p>
       </div>
     </div>
@@ -908,7 +908,7 @@
     <div class="principle">
       <div class="principle-num">2</div>
       <div>
-        <h3>Minimal Scaffolding, Maximum Model</h3>
+        <h3>Minimal scaffolding, maximum model</h3>
         <p>The SWE-bench agent that scored 49% uses only two tools: a Bash tool (persistent state, no internet) and an Edit tool (str_replace, view, create, insert, undo). No framework. No RAG. No planning module. The team actively removes tools &mdash; they unshipped <code>ls</code> once bash enforcement was robust. Cat Wu: <strong>"Everything you can do, Claude can do. There's nothing in between."</strong> The foundational paper states: "Start by using LLM APIs directly: many patterns can be implemented in a few lines of code."</p>
       </div>
     </div>
@@ -916,7 +916,7 @@
     <div class="principle">
       <div class="principle-num">3</div>
       <div>
-        <h3>Tool Design Over Prompt Engineering</h3>
+        <h3>Tool design over prompt engineering</h3>
         <p>From the SWE-bench work: <strong>"Much more attention should go into designing tool interfaces for models."</strong> The team spent more time optimizing tool interfaces than the overall prompt. Tools are the contract between human intent and model capability. This is why Claude Code's <code>Edit</code> tool enforces exact string matching (not line numbers) and the <code>Bash</code> tool maintains persistent state &mdash; each design choice encodes an assumption about reliable model interaction.</p>
       </div>
     </div>
@@ -924,7 +924,7 @@
     <div class="principle">
       <div class="principle-num">4</div>
       <div>
-        <h3>Separate Generation From Evaluation</h3>
+        <h3>Separate generation from evaluation</h3>
         <p>From harness design research: <strong>"Agents tend to respond by confidently praising the work &mdash; even when, to a human observer, the quality is obviously mediocre."</strong> Never let the same agent generate and evaluate its own work. The three-agent harness (Planner, Generator, Evaluator) exists specifically for this reason. The Evaluator actively runs the application, not just reads the code.</p>
       </div>
     </div>
@@ -932,7 +932,7 @@
     <div class="principle">
       <div class="principle-num">5</div>
       <div>
-        <h3>Underfund Teams, Unlimited Tokens</h3>
+        <h3>Underfund teams, unlimited tokens</h3>
         <p>Boris Cherny advocates providing small teams with unlimited API access rather than large headcount. Claude Code started with one engineer (Boris), grew to ~10. The team ships 60-100 internal npm releases per day. This forces prioritization: the model does the heavy lifting, humans guide direction. Individual engineers average 5 PRs/day; Boris routinely ships 10-30 PRs/day.</p>
       </div>
     </div>
@@ -940,7 +940,7 @@
     <div class="principle">
       <div class="principle-num">6</div>
       <div>
-        <h3>Every Component Encodes an Assumption</h3>
+        <h3>Every component encodes an assumption</h3>
         <p>From "Harness design for long-running application development": <strong>"Every component in a harness encodes an assumption about what the model can't do on its own."</strong> If the model can do it, remove the component. If it can't, make the harness handle it. This is why harness design evolves with model capabilities &mdash; what required scaffolding with Claude 3 may be unnecessary with Claude 4.</p>
       </div>
     </div>
@@ -958,8 +958,8 @@
 <section id="stack">
   <div class="container">
     <div class="section-header">
-      <h4>02 &mdash; Tech Stack</h4>
-      <h2>How Claude Code Is Built</h2>
+      <h4>02 &mdash; Tech stack</h4>
+      <h2>How Claude Code is built</h2>
       <p>Technology choices reflect the "model writes the code" philosophy. Pick technologies the model knows best.</p>
     </div>
 
@@ -991,13 +991,13 @@
       </div>
       <div class="card">
         <span class="tag tag-accent">Remote Dev</span>
-        <h3>Coder Control Plane</h3>
+        <h3>Coder control plane</h3>
         <p>Anthropic uses <a href="https://coder.com" target="_blank">Coder</a> for remote dev environments. Jacqueline Lee (MTS): "I have been focusing on remote development, majorly leveraging Coder as the control plane." Agents run in background &mdash; close your laptop and work continues.</p>
       </div>
     </div>
 
     <div class="subsection">
-      <h3>Origin Story</h3>
+      <h3>Origin story</h3>
       <p style="color: var(--text-secondary);">Claude Code originated from a command-line tool Boris Cherny built to state what music an engineer was listening to. After giving it filesystem access, it "spread like wildfire at Anthropic." Boris joined Anthropic in September 2024 and began prototyping with Claude 3.6. He created the first working prototype in days. Sid Bidasaria joined as engineer #2. The team grew to ~10 engineers, now includes PMs, designers, data scientists. An Anthropic spokesperson clarified: company-wide, between 70% and 90% of code is AI-authored.</p>
     </div>
   </div>
@@ -1009,15 +1009,15 @@
 <section id="workflows">
   <div class="container">
     <div class="section-header">
-      <h4>03 &mdash; Development Workflows</h4>
-      <h2>The AI-First Development Loop</h2>
+      <h4>03 &mdash; Development workflows</h4>
+      <h2>The AI-first development loop</h2>
       <p>Anthropic engineers have converged on several distinct workflow patterns, each suited to different task types.</p>
     </div>
 
     <!-- Autonomous Loop -->
     <div class="card" style="margin-bottom: 1.5rem;">
       <span class="tag tag-green">Primary Workflow</span>
-      <h3>The Autonomous Loop (Shift+Tab / Auto-Accept Mode)</h3>
+      <h3>The autonomous loop (Shift+Tab / auto-accept mode)</h3>
       <div class="workflow">
         <span class="workflow-step">Clean git state</span>
         <span class="workflow-arrow">&rarr;</span>
@@ -1040,7 +1040,7 @@
     <div class="two-col">
       <div class="card">
         <span class="tag tag-blue">High Volume</span>
-        <h3>The Slot Machine</h3>
+        <h3>The slot machine</h3>
         <p>Used by Data Science and ML Engineering. Commit state, let Claude run 30 minutes, accept or restart fresh. Starting over often has higher success rate than debugging a broken attempt. Build permanent React dashboards (5,000+ lines of TypeScript) instead of throwaway Jupyter notebooks &mdash; despite "knowing very little JavaScript."</p>
         <div class="quote">
           <p>"Treat it like a slot machine &mdash; starting over often has higher success rate than fixing."</p>
@@ -1060,18 +1060,18 @@
 
     <div class="card" style="margin-top: 1.5rem;">
       <span class="tag tag-yellow">One-shot First</span>
-      <h3>Try and Rollback</h3>
+      <h3>Try and rollback</h3>
       <p>Used by RL Engineering. Quick prompt, let Claude attempt full implementation. Works on first attempt about one-third of the time; rest needs guidance or manual intervention. Frequent git checkpointing is essential. The key insight: always try the one-shot approach first before investing in complex prompting &mdash; you'd be surprised how often it works.</p>
     </div>
 
     <!-- Five Agent Patterns -->
     <div class="subsection">
-      <h3>The Five Agent Workflow Patterns (from "Building Effective Agents")</h3>
+      <h3>The five agent workflow patterns (from "Building Effective Agents")</h3>
       <p style="color: var(--text-secondary); margin-bottom: 1.2rem;">The foundational paper distinguishes <strong>workflows</strong> (predefined code paths with LLMs) from <strong>agents</strong> (LLMs dynamically directing processes). Five workflow patterns form the building blocks:</p>
       <div class="card-grid">
         <div class="card">
           <span class="tag tag-blue">Pattern 1</span>
-          <h3>Prompt Chaining</h3>
+          <h3>Prompt chaining</h3>
           <p>Sequential LLM calls where each step processes the previous output. Each link has its own validation gate. Best for tasks decomposable into fixed subtasks. Example: generate code &rarr; review code &rarr; fix issues.</p>
         </div>
         <div class="card">
@@ -1086,12 +1086,12 @@
         </div>
         <div class="card">
           <span class="tag tag-yellow">Pattern 4</span>
-          <h3>Orchestrator-Workers</h3>
+          <h3>Orchestrator-workers</h3>
           <p>A lead agent (Opus) dynamically breaks tasks and delegates to parallel worker agents (Sonnet). Outperformed single-agent by 90.2%. Token usage explains 80% of variance in quality.</p>
         </div>
         <div class="card">
           <span class="tag tag-red">Pattern 5</span>
-          <h3>Evaluator-Optimizer</h3>
+          <h3>Evaluator-optimizer</h3>
           <p>One LLM generates, another evaluates and provides feedback. Loop until quality threshold met. Critical because agents "confidently praise mediocre work." Separating concerns is non-negotiable for quality.</p>
         </div>
       </div>
@@ -1100,7 +1100,7 @@
     <!-- Multi-agent -->
     <div class="card" style="margin-top: 1.5rem;">
       <span class="tag tag-accent">Parallel Execution</span>
-      <h3>Multi-Agent Development (Map-Reduce)</h3>
+      <h3>Multi-agent development (map-reduce)</h3>
       <div class="workflow">
         <span class="workflow-step">Orchestrator defines tasks</span>
         <span class="workflow-arrow">&rarr;</span>
@@ -1123,15 +1123,15 @@
 <section id="harnesses">
   <div class="container">
     <div class="section-header">
-      <h4>04 &mdash; Agent Harness Design</h4>
-      <h2>Architectures for Long-Running Agents</h2>
+      <h4>04 &mdash; Agent harness design</h4>
+      <h2>Architectures for long-running agents</h2>
       <p>A harness is the scaffolding around a coding agent. Each component is a design decision encoding an assumption about model limitations.</p>
     </div>
 
     <!-- Two-Agent -->
     <div class="card" style="margin-bottom: 1.5rem;">
       <span class="tag tag-blue">Architecture A</span>
-      <h3>Two-Agent System (Incremental Feature Development)</h3>
+      <h3>Two-agent system (incremental feature development)</h3>
       <div class="harness-diagram">
 <span class="dim">// Designed for long-running development across multiple context windows</span>
 
@@ -1164,7 +1164,7 @@
     <!-- Three-Agent -->
     <div class="card" style="margin-bottom: 1.5rem;">
       <span class="tag tag-purple">Architecture B</span>
-      <h3>Three-Agent System (Quality-Critical Applications)</h3>
+      <h3>Three-agent system (quality-critical applications)</h3>
       <div class="harness-diagram">
 <span class="hl">PLANNER AGENT</span>
   <span class="blue">&rarr;</span> Expands terse user prompt into comprehensive spec
@@ -1199,7 +1199,7 @@
     <!-- Parallel -->
     <div class="card">
       <span class="tag tag-yellow">Architecture C</span>
-      <h3>Parallel Agent System (C Compiler Project)</h3>
+      <h3>Parallel agent system (C compiler project)</h3>
       <div class="harness-diagram">
 <span class="dim">// 16 parallel agents, ~2,000 sessions, ~$20,000 in API costs</span>
 <span class="dim">// Result: 100,000-line Rust C compiler supporting x86, ARM, RISC-V</span>
@@ -1237,14 +1237,14 @@
 <section id="claudemd">
   <div class="container">
     <div class="section-header">
-      <h4>04b &mdash; CLAUDE.md, Hooks & Skills</h4>
-      <h2>The Configuration Layer That Powers Everything</h2>
+      <h4>04b &mdash; CLAUDE.md, hooks & skills</h4>
+      <h2>The configuration layer that powers everything</h2>
       <p>CLAUDE.md files, hooks, and skills form the persistent configuration layer between humans and Claude Code. Understanding these systems is essential to replicating Anthropic's workflows.</p>
     </div>
 
     <!-- CLAUDE.md -->
     <div class="card" style="margin-bottom: 1.5rem;">
-      <h3>CLAUDE.md File Hierarchy (5 Scopes)</h3>
+      <h3>CLAUDE.md file hierarchy (5 scopes)</h3>
       <p style="margin-bottom: 1rem;">Files are loaded by walking UP the directory tree. All discovered files are concatenated &mdash; they do not override each other.</p>
       <table class="ref-table">
         <thead><tr><th>Scope</th><th>Location</th><th>Shared With</th></tr></thead>
@@ -1265,7 +1265,7 @@
 
     <!-- Auto Memory -->
     <div class="card" style="margin-bottom: 1.5rem;">
-      <h3>Auto Memory Architecture</h3>
+      <h3>Auto memory architecture</h3>
       <p style="color: var(--text-secondary);">Lives at <code>~/.claude/projects/&lt;project&gt;/memory/</code> (derived from git repo). Machine-local, not shared across teams.</p>
       <div class="harness-diagram">
 <span class="green">MEMORY.md</span>          <span class="dim">// Index file, first 200 lines / 25KB loaded at session start</span>
@@ -1280,7 +1280,7 @@
 
     <!-- Hooks -->
     <div class="card" style="margin-bottom: 1.5rem;">
-      <h3>Hooks System (26 Lifecycle Events)</h3>
+      <h3>Hooks system (26 lifecycle events)</h3>
       <p style="color: var(--text-secondary); margin-bottom: 1rem;">Hooks execute shell commands, HTTP requests, prompt evaluations, or spawn sub-agents in response to Claude Code lifecycle events. Configured in <code>settings.json</code>.</p>
       <div class="two-col">
         <div>
@@ -1308,7 +1308,7 @@
 
     <!-- Skills -->
     <div class="card">
-      <h3>Skills System (SKILL.md)</h3>
+      <h3>Skills system (SKILL.md)</h3>
       <p style="color: var(--text-secondary); margin-bottom: 1rem;">Skills are the extensibility layer for Claude Code. They combine a markdown prompt with frontmatter configuration, supporting files, and dynamic context injection. Follows the open <a href="https://agentskills.io" target="_blank">Agent Skills</a> standard.</p>
       <div class="harness-diagram">
 <span class="dim">// Example SKILL.md</span>
@@ -1337,14 +1337,14 @@ Markdown instructions here...
 <section id="boris">
   <div class="container">
     <div class="section-header">
-      <h4>04c &mdash; Case Study</h4>
-      <h2>Boris Cherny's Exact Daily Workflow</h2>
+      <h4>04c &mdash; Case study</h4>
+      <h2>Boris Cherny's exact daily workflow</h2>
       <p>The creator of Claude Code's actual working setup, documented from multiple interviews and <a href="https://howborisusesclaudecode.com" target="_blank">howborisusesclaudecode.com</a>.</p>
     </div>
 
     <div class="two-col">
       <div class="card">
-        <h3>Parallel Sessions</h3>
+        <h3>Parallel sessions</h3>
         <ul class="checklist">
           <li>Runs <strong>5 Claude Code instances</strong> simultaneously in separate git checkouts (numbered tabs 1-5)</li>
           <li>Maintains <strong>5-10 additional sessions</strong> on claude.ai/code</li>
@@ -1354,7 +1354,7 @@ Markdown instructions here...
         </ul>
       </div>
       <div class="card">
-        <h3>Model & Settings</h3>
+        <h3>Model & settings</h3>
         <ul class="checklist">
           <li>Exclusively uses <strong>Opus 4.5 with thinking mode</strong>: "It's the best coding model I've ever used"</li>
           <li>Uses <code>/effort max</code> for complex debugging and architecture</li>
@@ -1366,7 +1366,7 @@ Markdown instructions here...
     </div>
 
     <div class="card" style="margin-top: 1.5rem;">
-      <h3>Code Review Revolution at Anthropic</h3>
+      <h3>Code review revolution at Anthropic</h3>
       <p>Code output per engineer <strong>up 200%</strong>, making reviews the bottleneck. Solution: <strong>multi-agent code review</strong>. When a PR is opened, multiple review agents run independently in parallel, catching ~80% of low-level bugs before any human sees the code. Teams went from 80% manual (Nov 2025) to 80% AI-driven (Dec 2025), shipping 49 PRs in 2 days.</p>
       <div class="quote">
         <p>"Give Claude a way to verify its work. If Claude has that feedback loop, it will 2-3x the quality of the final result."</p>
@@ -1382,8 +1382,8 @@ Markdown instructions here...
 <section id="context">
   <div class="container">
     <div class="section-header">
-      <h4>05 &mdash; Context Engineering</h4>
-      <h2>Optimizing Token Utility Across Inference Turns</h2>
+      <h4>05 &mdash; Context engineering</h4>
+      <h2>Optimizing token utility across inference turns</h2>
       <p>Context engineering is the discipline of managing what information reaches the model and when. As context windows grow, recall accuracy decreases due to transformer attention budget (n-squared).</p>
     </div>
 
@@ -1395,31 +1395,31 @@ Markdown instructions here...
       </div>
       <div class="card">
         <span class="tag tag-green">Technique 2</span>
-        <h3>Structured Note-Taking</h3>
+        <h3>Structured note-taking</h3>
         <p>Persistent external memory via files: <code>CLAUDE.md</code> (project instructions), <code>NOTES.md</code> (discoveries), to-do lists. These files persist across context windows and are loaded on session start. The CLAUDE.md file can be project-level, user-level (~/.claude/CLAUDE.md), or directory-scoped.</p>
       </div>
       <div class="card">
         <span class="tag tag-purple">Technique 3</span>
-        <h3>Sub-Agent Delegation</h3>
+        <h3>Sub-agent delegation</h3>
         <p>Delegate research to specialist sub-agents that return 1,000-2,000 token summaries instead of loading full file contents into the main context. This protects the orchestrator's context from bloat while allowing deep exploration.</p>
       </div>
       <div class="card">
         <span class="tag tag-yellow">Technique 4</span>
-        <h3>Just-in-Time Retrieval</h3>
+        <h3>Just-in-time retrieval</h3>
         <p>Maintain lightweight identifiers (file paths, function names) and dynamically load full content only when needed at runtime. Don't pre-load everything &mdash; let the agent pull what it needs via tools like <code>Read</code>, <code>Grep</code>, <code>Glob</code>.</p>
       </div>
     </div>
 
     <div class="subsection">
-      <h3>The "Think" Tool</h3>
+      <h3>The "think" tool</h3>
       <p style="color: var(--text-secondary);">Creates a designated space for Claude to pause during response generation for structured reasoning. Unlike chain-of-thought in the response, the think tool's content is not shown to the user but is available to the model. Results: <strong>54% improvement</strong> in complex airline customer service tasks; <strong>1.6% improvement</strong> on SWE-bench (p &lt; .001). Most effective in multi-step tool use where the model must plan across several operations.</p>
     </div>
 
     <div class="subsection">
-      <h3>Extended Thinking (Deep Technical)</h3>
+      <h3>Extended thinking (deep technical)</h3>
       <div class="two-col">
         <div class="card">
-          <h3>API Configuration</h3>
+          <h3>API configuration</h3>
           <div class="harness-diagram">
 <span class="dim">// Enable extended thinking</span>
 {
@@ -1435,7 +1435,7 @@ Markdown instructions here...
           </div>
         </div>
         <div class="card">
-          <h3>Key Constraints</h3>
+          <h3>Key constraints</h3>
           <ul class="checklist">
             <li><strong>Minimum budget:</strong> 1,024 tokens</li>
             <li><code>budget_tokens</code> must be &lt; <code>max_tokens</code></li>
@@ -1451,7 +1451,7 @@ Markdown instructions here...
     </div>
 
     <div class="subsection">
-      <h3>Prompt Caching (Deep Technical)</h3>
+      <h3>Prompt caching (deep technical)</h3>
       <div class="two-col">
         <div class="card">
           <h3>Mechanism</h3>
@@ -1483,14 +1483,14 @@ Markdown instructions here...
 <section id="evals">
   <div class="container">
     <div class="section-header">
-      <h4>06 &mdash; Evaluations & Testing</h4>
-      <h2>How Anthropic Measures Agent Quality</h2>
+      <h4>06 &mdash; Evaluations & testing</h4>
+      <h2>How Anthropic measures agent quality</h2>
       <p>"Teams without evals face reactive loops &mdash; catching issues only in production."</p>
     </div>
 
     <div class="two-col">
       <div class="card">
-        <h3>Core Metrics</h3>
+        <h3>Core metrics</h3>
         <ul class="checklist">
           <li><strong>pass@k</strong>: Probability of at least 1 correct solution in k attempts. Use for development.</li>
           <li><strong>pass^k</strong>: Probability all k trials succeed. Critical for reliability &mdash; if pass@1 = 80%, pass^3 = 51%.</li>
@@ -1500,7 +1500,7 @@ Markdown instructions here...
         </ul>
       </div>
       <div class="card">
-        <h3>Practical Eval Design</h3>
+        <h3>Practical eval design</h3>
         <ul class="checklist">
           <li><strong>Start small</strong>: 20-50 tasks from actual user failures, not hundreds of synthetic cases.</li>
           <li><strong>Infrastructure noise is real</strong>: Anthropic measured a <strong>6 percentage point difference</strong> on Terminal-Bench 2.0 from infrastructure noise alone.</li>
@@ -1512,7 +1512,7 @@ Markdown instructions here...
     </div>
 
     <div class="card" style="margin-top: 1.5rem;">
-      <h3>The Postmortem Lesson</h3>
+      <h3>The postmortem lesson</h3>
       <p>In September 2025, three production bugs revealed critical evaluation gaps: (1) context window routing errors affected 30% of Claude Code users, (2) TPU misconfiguration caused output corruption, (3) an XLA:TPU compiler bug was triggered by code deployment. The key finding: <strong>"evaluations simply didn't capture the degradation users were reporting."</strong> Privacy controls limited engineer access to user interactions. Systemic changes: more sensitive evaluations, continuous production monitoring, <code>/bug</code> command and thumbs-down buttons for direct user feedback.</p>
     </div>
   </div>
@@ -1524,8 +1524,8 @@ Markdown instructions here...
 <section id="teams">
   <div class="container">
     <div class="section-header">
-      <h4>07 &mdash; Team Practices</h4>
-      <h2>How 10 Anthropic Teams Use Claude Code</h2>
+      <h4>07 &mdash; Team practices</h4>
+      <h2>How 10 Anthropic teams use Claude Code</h2>
       <p>From the official 22-page PDF. Source: <a href="https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf" target="_blank">How Anthropic Teams Use Claude Code (PDF)</a></p>
     </div>
 
@@ -1621,7 +1621,7 @@ Markdown instructions here...
 
     <!-- Internal research data -->
     <div class="card" style="margin-top: 1.5rem;">
-      <h3>Internal Research: AI Transforming Work at Anthropic</h3>
+      <h3>Internal research: AI transforming work at Anthropic</h3>
       <p>In August 2025, Anthropic surveyed <strong>132 engineers and researchers</strong>, conducted <strong>53 in-depth qualitative interviews</strong>, and analyzed <strong>200,000 internal Claude Code transcripts</strong> (Feb-Aug 2025).</p>
       <div class="two-col" style="margin-top: 1rem;">
         <ul class="checklist">
@@ -1647,8 +1647,8 @@ Markdown instructions here...
 <section id="sdk">
   <div class="container">
     <div class="section-header">
-      <h4>07b &mdash; Agent SDK & Subagents</h4>
-      <h2>Programmable Agents for CI/CD and Production</h2>
+      <h4>07b &mdash; Agent SDK & subagents</h4>
+      <h2>Programmable agents for CI/CD and production</h2>
       <p>The Agent SDK provides the same capabilities as Claude Code CLI, but programmable. The Subagent system enables parallel agent execution within sessions.</p>
     </div>
 
@@ -1685,7 +1685,7 @@ Markdown instructions here...
     </div>
 
     <div class="card" style="margin-top: 1.5rem;">
-      <h3>Built-in Subagent Types</h3>
+      <h3>Built-in subagent types</h3>
       <table class="ref-table">
         <thead><tr><th>Agent</th><th>Model</th><th>Tools</th><th>Use Case</th></tr></thead>
         <tbody>
@@ -1700,7 +1700,7 @@ Markdown instructions here...
     </div>
 
     <div class="card" style="margin-top: 1.5rem;">
-      <h3>Computer Use (Browser Automation)</h3>
+      <h3>Computer use (browser automation)</h3>
       <p>Claude can interact with computer screens via screenshot-based perception and coordinate-based actions. Relevant for testing web UIs, automated QA, and browser-based workflows.</p>
       <div class="two-col" style="margin-top: 1rem;">
         <div>
@@ -1729,24 +1729,24 @@ Markdown instructions here...
   <div class="container">
     <div class="section-header">
       <h4>08 &mdash; Model Context Protocol (MCP)</h4>
-      <h2>The Standard for Tool Integration</h2>
+      <h2>The standard for tool integration</h2>
       <p>MCP is an open protocol that standardizes how AI models connect to external tools and data sources. Announced November 2024.</p>
     </div>
 
     <div class="card-grid">
       <div class="card">
         <span class="tag tag-blue">Architecture</span>
-        <h3>Client-Server Protocol</h3>
+        <h3>Client-server protocol</h3>
         <p>MCP follows a client-server architecture. The <strong>MCP host</strong> (Claude Code, Claude Desktop) connects to <strong>MCP servers</strong> that expose tools, resources, and prompts. Servers are lightweight processes (often Node.js or Python) that implement the MCP specification. Communication uses JSON-RPC over stdio or SSE.</p>
       </div>
       <div class="card">
         <span class="tag tag-green">In Practice</span>
-        <h3>How Anthropic Uses MCP</h3>
+        <h3>How Anthropic uses MCP</h3>
         <p>The Growth Marketing team built a Meta Ads MCP server for campaign analytics. Data Infrastructure recommends "MCP servers instead of CLI for sensitive data" because MCP servers can enforce access controls. Desktop Extensions provide one-click MCP server installation. The code execution MCP enables sandboxed code running inside Claude.</p>
       </div>
       <div class="card">
         <span class="tag tag-purple">Ecosystem</span>
-        <h3>Open Standard</h3>
+        <h3>Open standard</h3>
         <p>Full specification at <a href="https://modelcontextprotocol.io" target="_blank">modelcontextprotocol.io</a>. GitHub organization: <a href="https://github.com/modelcontextprotocol" target="_blank">modelcontextprotocol</a>. GitHub's official MCP server is maintained at <code>anthropics/github-mcp-server</code>. Anthropic Academy offers courses on MCP basics and advanced topics.</p>
       </div>
     </div>
@@ -1759,14 +1759,14 @@ Markdown instructions here...
 <section id="safety">
   <div class="container">
     <div class="section-header">
-      <h4>09 &mdash; Safety, Alignment & Interpretability</h4>
-      <h2>The Research Foundation</h2>
+      <h4>09 &mdash; Safety, alignment & interpretability</h4>
+      <h2>The research foundation</h2>
       <p>Anthropic's engineering practices are inseparable from their safety research. Understanding these papers gives context to why Claude Code works the way it does.</p>
     </div>
 
     <!-- Alignment & Safety -->
     <div class="subsection">
-      <h3>Core Safety Research</h3>
+      <h3>Core safety research</h3>
       <div class="card-grid">
         <div class="card">
           <span class="tag tag-red">Foundational</span>
@@ -1776,31 +1776,31 @@ Markdown instructions here...
         </div>
         <div class="card">
           <span class="tag tag-red">Foundational</span>
-          <h3>RLHF: Helpful & Harmless</h3>
+          <h3>RLHF: helpful & harmless</h3>
           <p>Applies preference modeling and RLHF to fine-tune language models as assistants. Key finding: alignment training <em>improves</em> performance on nearly all NLP evaluations, including coding. It's not a tradeoff. Released the hh-rlhf dataset (public, on GitHub).</p>
           <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2204.05862" target="_blank">arxiv: 2204.05862</a></p>
         </div>
         <div class="card">
           <span class="tag tag-purple">Safety</span>
-          <h3>Sleeper Agents</h3>
+          <h3>Sleeper agents</h3>
           <p>Trains LLMs with backdoor behaviors (write secure code in 2023, insert vulnerabilities when year is 2024). These deceptive behaviors <em>persist through</em> standard safety training (SFT, RLHF, adversarial training). Directly relevant to trusting AI-generated code.</p>
           <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2401.05566" target="_blank">arxiv: 2401.05566</a></p>
         </div>
         <div class="card">
           <span class="tag tag-purple">Safety</span>
-          <h3>Alignment Faking</h3>
+          <h3>Alignment faking</h3>
           <p>First empirical demonstration of alignment faking without explicit training. Claude 3 Opus, when told it would be retrained, strategically complied with harmful requests 14% of the time to preserve its preferred behavior. Demonstrates why robust evaluation of AI agents is critical.</p>
           <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2412.14093" target="_blank">arxiv: 2412.14093</a></p>
         </div>
         <div class="card">
           <span class="tag tag-yellow">Evaluation</span>
-          <h3>Sabotage Evaluations</h3>
+          <h3>Sabotage evaluations</h3>
           <p>Tests four sabotage types: human decision sabotage, <strong>code sabotage</strong> (inserting subtle bugs), sandbagging (hiding capabilities during testing), and undermining oversight. Current models: minimal mitigations suffice. But stronger ones will be needed soon.</p>
           <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2410.21514" target="_blank">arxiv: 2410.21514</a></p>
         </div>
         <div class="card">
           <span class="tag tag-yellow">Evaluation</span>
-          <h3>Unfaithful Chain-of-Thought</h3>
+          <h3>Unfaithful chain-of-thought</h3>
           <p>CoT explanations can systematically misrepresent model reasoning. Models exploit reward hacks &gt;99% of the time but verbalize them &lt;2% of the time. This is why you can't just read Claude's reasoning to verify its code &mdash; you need actual tests.</p>
           <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2305.04388" target="_blank">arxiv: 2305.04388</a> (NeurIPS 2023)</p>
         </div>
@@ -1809,24 +1809,24 @@ Markdown instructions here...
 
     <!-- Interpretability -->
     <div class="subsection">
-      <h3>Interpretability Research (Transformer Circuits Thread)</h3>
+      <h3>Interpretability research (Transformer Circuits Thread)</h3>
       <p style="color: var(--text-secondary); margin-bottom: 1rem;">Published at <a href="https://transformer-circuits.pub" target="_blank">transformer-circuits.pub</a>. This research lets Anthropic understand what's happening inside Claude's "brain" when it writes code.</p>
       <div class="card-grid">
         <div class="card">
           <span class="tag tag-blue">Foundation</span>
-          <h3>Toy Models of Superposition</h3>
+          <h3>Toy models of superposition</h3>
           <p>Mathematical framework for how neural networks store more features than dimensions. Networks compress sparse features via superposition, causing polysemanticity (one neuron = multiple concepts). Foundation for all subsequent interpretability work.</p>
           <p style="margin-top: 0.5rem;"><a href="https://arxiv.org/abs/2209.10652" target="_blank">arxiv: 2209.10652</a></p>
         </div>
         <div class="card">
           <span class="tag tag-green">Breakthrough</span>
-          <h3>Scaling Monosemanticity</h3>
+          <h3>Scaling monosemanticity</h3>
           <p>Scales sparse autoencoders to Claude 3 Sonnet (production model), extracting millions of interpretable features: the Golden Gate Bridge, code errors, deception, safety-relevant behaviors. Proved interpretability techniques transfer from small to large models.</p>
           <p style="margin-top: 0.5rem;"><a href="https://transformer-circuits.pub/2024/scaling-monosemanticity/" target="_blank">transformer-circuits.pub</a></p>
         </div>
         <div class="card">
           <span class="tag tag-purple">Applied</span>
-          <h3>Circuit Tracing</h3>
+          <h3>Circuit tracing</h3>
           <p>Attribution graphs trace the computational steps a model uses to transform inputs into outputs. Applied to Claude 3.5 Haiku. Open-sourced as a Python library. Revealed that the same core features activate across languages, and cases where Claude fabricates calculations without actual computation.</p>
           <p style="margin-top: 0.5rem;"><a href="https://transformer-circuits.pub/2025/attribution-graphs/methods.html" target="_blank">transformer-circuits.pub</a></p>
         </div>
@@ -1853,24 +1853,24 @@ Markdown instructions here...
 <section id="infra">
   <div class="container">
     <div class="section-header">
-      <h4>10 &mdash; Infrastructure & Operations</h4>
-      <h2>Production Architecture at Scale</h2>
+      <h4>10 &mdash; Infrastructure & operations</h4>
+      <h2>Production architecture at scale</h2>
     </div>
 
     <div class="card-grid">
       <div class="card">
         <span class="tag tag-blue">Compute</span>
-        <h3>Multi-Cloud, Multi-Chip</h3>
+        <h3>Multi-cloud, multi-chip</h3>
         <p>Claude serves across <strong>AWS Trainium, NVIDIA GPUs, and Google TPUs</strong> with "strict equivalence standards" &mdash; identical quality regardless of hardware. Million-chip footprint across AWS and GCP. Serves on AWS, GCP, Azure, and additional CSPs.</p>
       </div>
       <div class="card">
         <span class="tag tag-green">Orchestration</span>
-        <h3>Amazon EKS Ultra Scale</h3>
+        <h3>Amazon EKS Ultra scale</h3>
         <p><strong>&gt;99% of compute on Amazon EKS</strong>. Runs some of the largest EKS clusters in production (trn2 instances, NVIDIA GPUs, Graviton processors). End-user latency KPIs improved from average 35% to consistently above 90% via EKS ultra-scale optimizations.</p>
       </div>
       <div class="card">
         <span class="tag tag-purple">Deployment</span>
-        <h3>Progressive & Rainbow Delivery</h3>
+        <h3>Progressive & rainbow delivery</h3>
         <p>Canary/soak testing, blue-green deployments, traffic shifting, automated rollback. <strong>Rainbow deployments</strong> for multi-agent systems: gradually shift traffic between versions without disrupting running agents. Goal: make deployment "boring and unattended."</p>
       </div>
       <div class="card">
@@ -1880,7 +1880,7 @@ Markdown instructions here...
       </div>
       <div class="card">
         <span class="tag tag-yellow">Confidential</span>
-        <h3>Trusted Virtual Machines</h3>
+        <h3>Trusted virtual machines</h3>
         <p>Confidential inference via trusted VMs ensures that even Anthropic cannot access user data during inference in high-security deployments. Published research on the architecture and guarantees.</p>
       </div>
       <div class="card">
@@ -1898,15 +1898,15 @@ Markdown instructions here...
 <section id="timeline">
   <div class="container">
     <div class="section-header">
-      <h4>11 &mdash; Study Timeline</h4>
-      <h2>Your 12-Week Deep Adoption Plan</h2>
+      <h4>11 &mdash; Study timeline</h4>
+      <h2>Your 12-week deep adoption plan</h2>
       <p>A phased approach to adopting Anthropic-style AI-first development, from foundations through production multi-agent systems.</p>
     </div>
 
     <div class="timeline">
       <div class="timeline-item">
         <div class="timeline-phase">Week 1-2 &mdash; Foundations</div>
-        <h3>Core Philosophy, Tools & First Workflows</h3>
+        <h3>Core philosophy, tools & first workflows</h3>
         <p><strong>Read (essential):</strong> <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">Building Effective Agents</a> (the foundational paper). <a href="https://www.anthropic.com/engineering/claude-code-best-practices" target="_blank">Claude Code: Best practices for agentic coding</a>.</p>
         <p><strong>Read (deep):</strong> <a href="https://newsletter.pragmaticengineer.com/p/how-claude-code-is-built" target="_blank">The Pragmatic Engineer: How Claude Code is built</a>. <a href="https://every.to/podcast/how-to-use-claude-code-like-the-people-who-built-it" target="_blank">Every.to: How to use Claude Code like the people who built it</a>.</p>
         <p><strong>Course:</strong> <a href="https://anthropic.skilljar.com/claude-code-in-action" target="_blank">Anthropic Academy: Claude Code in Action</a> (free, with certificate).</p>
@@ -1915,7 +1915,7 @@ Markdown instructions here...
 
       <div class="timeline-item">
         <div class="timeline-phase">Week 3-4 &mdash; Workflow Mastery</div>
-        <h3>Team Practices & Context Engineering</h3>
+        <h3>Team practices & context engineering</h3>
         <p><strong>Read:</strong> <a href="https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf" target="_blank">How Anthropic Teams Use Claude Code (22-page PDF)</a>. <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">Effective context engineering for AI agents</a>. <a href="https://www.anthropic.com/engineering/claude-think-tool" target="_blank">The "think" tool</a>.</p>
         <p><strong>Listen:</strong> <a href="https://www.latent.space/p/claude-code" target="_blank">Latent Space: Claude Code architecture</a>. <a href="https://www.lennysnewsletter.com/p/head-of-claude-code-what-happens" target="_blank">Lenny's Podcast: Head of Claude Code</a>.</p>
         <p><strong>Do:</strong> Practice the slot machine workflow, TDD with Claude, and try-and-rollback patterns. Target 3-5 PRs/day. Build custom slash commands for your recurring tasks. Implement prompt caching in your API calls.</p>
@@ -1923,7 +1923,7 @@ Markdown instructions here...
 
       <div class="timeline-item">
         <div class="timeline-phase">Week 5-6 &mdash; MCP & Tool Design</div>
-        <h3>Model Context Protocol & Agent Tool Interfaces</h3>
+        <h3>Model Context Protocol & agent tool interfaces</h3>
         <p><strong>Read:</strong> <a href="https://www.anthropic.com/news/model-context-protocol" target="_blank">Introducing the Model Context Protocol</a>. <a href="https://www.anthropic.com/engineering/writing-tools-for-agents" target="_blank">Writing effective tools for agents</a>. <a href="https://www.anthropic.com/engineering/advanced-tool-use" target="_blank">Advanced tool use on Claude Developer Platform</a>.</p>
         <p><strong>Course:</strong> <a href="https://anthropic.skilljar.com/introduction-to-model-context-protocol" target="_blank">Anthropic Academy: Introduction to MCP</a> + <a href="https://anthropic.skilljar.com/model-context-protocol-advanced-topics" target="_blank">MCP Advanced Topics</a>.</p>
         <p><strong>Do:</strong> Build your first MCP server for an internal tool (database, API, docs). Study the <a href="https://modelcontextprotocol.io" target="_blank">MCP specification</a>. Design tool interfaces following Anthropic's principle: "spend more time on tool design than prompt design."</p>
@@ -1931,7 +1931,7 @@ Markdown instructions here...
 
       <div class="timeline-item">
         <div class="timeline-phase">Week 7-8 &mdash; Harness Design</div>
-        <h3>Build Your First Agent Harness</h3>
+        <h3>Build your first agent harness</h3>
         <p><strong>Read:</strong> <a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank">Effective harnesses for long-running agents</a>. <a href="https://www.anthropic.com/engineering/harness-design-long-running-apps" target="_blank">Harness design for long-running application development</a>.</p>
         <p><strong>Study:</strong> <a href="https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents" target="_blank">Demystifying evals for AI agents</a>. <a href="https://www.anthropic.com/engineering/infrastructure-noise" target="_blank">Quantifying infrastructure noise in evals</a>.</p>
         <p><strong>Do:</strong> Implement a two-agent system (Initializer + Coding Agent) for a medium feature. Create your first eval suite (20-50 tasks from real failures). Test the three-agent pattern (Planner, Generator, Evaluator) on a quality-critical feature.</p>
@@ -1939,7 +1939,7 @@ Markdown instructions here...
 
       <div class="timeline-item">
         <div class="timeline-phase">Week 9-10 &mdash; Safety & Multi-Agent</div>
-        <h3>Parallel Agents & Safety-Aware Development</h3>
+        <h3>Parallel agents & safety-aware development</h3>
         <p><strong>Read:</strong> <a href="https://www.anthropic.com/engineering/building-c-compiler" target="_blank">Building a C compiler with parallel Claudes</a>. <a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">How we built our multi-agent research system</a>. <a href="https://www.anthropic.com/engineering/building-agents-with-the-claude-agent-sdk" target="_blank">Building agents with the Claude Agent SDK</a>.</p>
         <p><strong>Study (safety):</strong> <a href="https://arxiv.org/abs/2212.08073" target="_blank">Constitutional AI paper</a>. <a href="https://arxiv.org/abs/2401.05566" target="_blank">Sleeper Agents paper</a>. <a href="https://www.anthropic.com/engineering/claude-code-sandboxing" target="_blank">Claude Code sandboxing</a>.</p>
         <p><strong>Do:</strong> Set up parallel agent execution with Docker containers or git worktrees. Build a code migration using orchestrator-workers. Implement sandboxing for your agent workflows. Configure <a href="https://github.com/anthropics/claude-code-action" target="_blank">claude-code-action</a> for your CI pipeline.</p>
@@ -1947,7 +1947,7 @@ Markdown instructions here...
 
       <div class="timeline-item">
         <div class="timeline-phase">Week 11-12 &mdash; Scale & Measure</div>
-        <h3>Team Rollout, Remote Dev & Metrics</h3>
+        <h3>Team rollout, remote dev & metrics</h3>
         <p><strong>Read:</strong> <a href="https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic" target="_blank">How AI Is Transforming Work at Anthropic</a> (internal research). <a href="https://www.anthropic.com/research/impact-software-development" target="_blank">AI's Impact on Software Development</a> (economic index). <a href="https://coder.com/blog/inside-anthropics-ai-first-development" target="_blank">Inside Anthropic's AI-First Development</a>.</p>
         <p><strong>Course:</strong> <a href="https://anthropic.skilljar.com/introduction-to-subagents" target="_blank">Anthropic Academy: Introduction to Subagents</a>. <a href="https://anthropic.skilljar.com/introduction-to-agent-skills" target="_blank">Introduction to Agent Skills</a>.</p>
         <p><strong>Do:</strong> Set up Coder or similar remote dev environments. Create team-specific CLAUDE.md files and shared slash commands. Implement the <a href="https://github.com/anthropics/claude-code-monitoring-guide" target="_blank">Claude Code monitoring guide</a> for ROI measurement. Track: PRs/engineer/day, AI-authored code %, time-to-ship, eval pass rates.</p>
@@ -1962,12 +1962,12 @@ Markdown instructions here...
 <section id="academy">
   <div class="container">
     <div class="section-header">
-      <h4>12 &mdash; Anthropic Academy & Learning</h4>
-      <h2>Free Official Courses & Webinars</h2>
+      <h4>12 &mdash; Anthropic Academy & learning</h4>
+      <h2>Free official courses & webinars</h2>
     </div>
 
     <div class="subsection">
-      <h3>Anthropic Academy Courses (Free, with Certificates)</h3>
+      <h3>Anthropic Academy courses (free, with certificates)</h3>
       <p style="color: var(--text-secondary); margin-bottom: 1rem;">All courses available at <a href="https://anthropic.skilljar.com" target="_blank">anthropic.skilljar.com</a></p>
       <div class="card-grid">
         <div class="card">
@@ -2022,7 +2022,7 @@ Markdown instructions here...
     </div>
 
     <div class="subsection">
-      <h3>Official Webinars</h3>
+      <h3>Official webinars</h3>
       <div class="card" style="margin-bottom: 1rem;">
         <table class="ref-table">
           <thead><tr><th>Webinar</th><th>Focus</th></tr></thead>
@@ -2039,29 +2039,29 @@ Markdown instructions here...
     </div>
 
     <div class="subsection">
-      <h3>GitHub Learning Resources</h3>
+      <h3>GitHub learning resources</h3>
       <div class="card-grid">
         <div class="card">
-          <h3><a href="https://github.com/anthropics/prompt-eng-interactive-tutorial" target="_blank">Prompt Engineering Tutorial</a></h3>
+          <h3><a href="https://github.com/anthropics/prompt-eng-interactive-tutorial" target="_blank">Prompt engineering tutorial</a></h3>
           <p>9-chapter interactive tutorial with exercises. Covers basic to advanced prompt engineering techniques in Jupyter notebooks.</p>
         </div>
         <div class="card">
-          <h3><a href="https://github.com/anthropics/courses" target="_blank">Anthropic Courses</a></h3>
+          <h3><a href="https://github.com/anthropics/courses" target="_blank">Anthropic courses</a></h3>
           <p>Educational courses as Jupyter notebooks. Covers tool use, RAG, agentic patterns, and more.</p>
         </div>
         <div class="card">
-          <h3><a href="https://github.com/anthropics/claude-cookbooks" target="_blank">Claude Cookbooks</a></h3>
+          <h3><a href="https://github.com/anthropics/claude-cookbooks" target="_blank">Claude cookbooks</a></h3>
           <p>Recipes for sub-agents, PDFs, evals, JSON mode, caching, tool use, RAG, and common integration patterns.</p>
         </div>
         <div class="card">
-          <h3><a href="https://github.com/anthropics/claude-quickstarts" target="_blank">Claude Quickstarts</a></h3>
+          <h3><a href="https://github.com/anthropics/claude-quickstarts" target="_blank">Claude quickstarts</a></h3>
           <p>Starter projects for building deployable applications with the Claude API.</p>
         </div>
       </div>
     </div>
 
     <div class="subsection">
-      <h3>Published Guides (PDFs)</h3>
+      <h3>Published guides (PDFs)</h3>
       <ul class="checklist">
         <li><a href="https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf" target="_blank">How Anthropic Teams Use Claude Code</a> (22 pages) &mdash; Real internal practices from 10 teams</li>
         <li><a href="https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf" target="_blank">The Complete Guide to Building Skills for Claude</a> &mdash; Agent skills development guide</li>
@@ -2078,14 +2078,14 @@ Markdown instructions here...
 <section id="references">
   <div class="container">
     <div class="section-header">
-      <h4>13 &mdash; Complete References</h4>
-      <h2>100+ Official Sources</h2>
+      <h4>13 &mdash; Complete references</h4>
+      <h2>100+ official sources</h2>
       <p>Every claim in this guide is traceable to these sources. Organized by category for study priority.</p>
     </div>
 
     <!-- Engineering Blog -->
     <div class="subsection">
-      <h3>Anthropic Engineering Blog (23 posts)</h3>
+      <h3>Anthropic engineering blog (23 posts)</h3>
       <div class="card">
         <table class="ref-table">
           <thead><tr><th style="width:90px">Date</th><th>Article</th><th style="width:90px">Topic</th></tr></thead>
@@ -2120,7 +2120,7 @@ Markdown instructions here...
 
     <!-- Research Papers -->
     <div class="subsection">
-      <h3>Research Papers (with arxiv IDs)</h3>
+      <h3>Research papers (with arxiv IDs)</h3>
       <div class="card">
         <table class="ref-table">
           <thead><tr><th style="width:120px">arxiv / URL</th><th>Paper</th><th style="width:80px">Year</th></tr></thead>
@@ -2177,7 +2177,7 @@ Markdown instructions here...
 
     <!-- Official Research Reports -->
     <div class="subsection">
-      <h3>Official Research Reports & Economic Index</h3>
+      <h3>Official research reports & economic index</h3>
       <div class="card">
         <table class="ref-table">
           <thead><tr><th>Report</th></tr></thead>
@@ -2197,7 +2197,7 @@ Markdown instructions here...
 
     <!-- Model Cards -->
     <div class="subsection">
-      <h3>Model Cards & System Cards</h3>
+      <h3>Model cards & system cards</h3>
       <div class="card">
         <table class="ref-table">
           <thead><tr><th>Model</th><th style="width:80px">Date</th><th>Link</th></tr></thead>
@@ -2216,7 +2216,7 @@ Markdown instructions here...
 
     <!-- Podcasts & Talks -->
     <div class="subsection">
-      <h3>Podcasts, Talks & Interviews</h3>
+      <h3>Podcasts, talks & interviews</h3>
       <div class="card">
         <table class="ref-table">
           <thead><tr><th style="width:80px">Type</th><th>Reference</th></tr></thead>
@@ -2244,7 +2244,7 @@ Markdown instructions here...
 
     <!-- Official Documentation -->
     <div class="subsection">
-      <h3>Official Documentation</h3>
+      <h3>Official documentation</h3>
       <div class="card">
         <table class="ref-table">
           <thead><tr><th>Resource</th><th>URL</th></tr></thead>
@@ -2272,7 +2272,7 @@ Markdown instructions here...
 
     <!-- Additional Sources -->
     <div class="subsection">
-      <h3>Additional Technical Sources</h3>
+      <h3>Additional technical sources</h3>
       <div class="card">
         <table class="ref-table">
           <thead><tr><th style="width:80px">Type</th><th>Reference</th></tr></thead>
@@ -2291,7 +2291,7 @@ Markdown instructions here...
 
     <!-- GitHub Repos -->
     <div class="subsection">
-      <h3>Key GitHub Repositories (github.com/anthropics)</h3>
+      <h3>Key GitHub repositories (github.com/anthropics)</h3>
       <div class="card">
         <table class="ref-table">
           <thead><tr><th>Repository</th><th>Description</th></tr></thead>
@@ -2395,7 +2395,7 @@ Markdown instructions here...
     // Hero word typewriter: erases and retypes "Software" variants (terminal only)
     (function heroWordCycle() {
       const el = document.querySelector('.hero-word');
-      const words = ['Software', 'Agents', 'the Future', 'with Claude', 'Software'];
+      const words = ['software', 'agents', 'the future', 'with Claude', 'software'];
       let wi = 0, ci = words[0].length, erasing = true, paused = false;
       function tick() {
         const word = words[wi];

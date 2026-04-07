@@ -64,9 +64,6 @@
         #e8937a, #d4a574, #b07eda, #7eb8da, #7ec9a0, #e8937a
       );
     }
-    .course-cta-wrap.paused {
-      background: linear-gradient(135deg, #e8937a, #d4a574, #b07eda);
-    }
     .course-cta {
       display: inline-flex; align-items: center; gap: 0.7rem;
       padding: 0.6rem 1.1rem 0.6rem 0.6rem;
@@ -375,7 +372,7 @@
     </p>
     <span class="course-cta-wrap" id="ctaWrap">
       <a href="https://cccourses.vercel.app/" target="_blank" class="course-cta">
-        <span class="course-cta-badge">+ Curso</span>
+        <span class="course-cta-badge">Curso</span>
         <span class="course-cta-text">Claude Code para Engenheiros &mdash; 29 m&oacute;dulos, 100% pr&aacute;tico</span>
         <svg class="course-cta-ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       </a>
@@ -1905,13 +1902,32 @@ Markdown instructions here...
       raf = requestAnimationFrame(spin);
     }
     spin();
+    let flashAngle = 0;
+    let loops = 0;
+    function flash() {
+      flashAngle = (flashAngle + 10) % 360;
+      if (flashAngle < 10) loops++;
+      if (loops >= 1) {
+        ctaWrap.style.background =
+          'conic-gradient(from 0deg, #e8937a, #d4a574, #b07eda, #7eb8da, #7ec9a0, #e8937a)';
+        return;
+      }
+      const d = `${flashAngle}deg`;
+      ctaWrap.style.background =
+        `conic-gradient(from ${d} at 50% 50%, transparent 0deg, transparent 330deg, #fff 350deg, transparent 360deg),` +
+        `conic-gradient(from 0deg, #e8937a, #d4a574, #b07eda, #7eb8da, #7ec9a0, #e8937a)`;
+      raf = requestAnimationFrame(flash);
+    }
     ctaWrap.addEventListener('mouseenter', () => {
       spinning = false;
       cancelAnimationFrame(raf);
-      ctaWrap.style.background = 'linear-gradient(135deg, #e8937a, #d4a574, #b07eda)';
+      flashAngle = 0;
+      loops = 0;
+      flash();
     });
     ctaWrap.addEventListener('mouseleave', () => {
       spinning = true;
+      cancelAnimationFrame(raf);
       spin();
     });
   }

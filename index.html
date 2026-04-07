@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
     /* Apply saved theme before paint to prevent flash */
-    (function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t)})();
+    (function(){var t=localStorage.getItem('theme')||'terminal';document.documentElement.setAttribute('data-theme',t)})();
   </script>
   <style>
     /* ======= DARK THEME (default) ======= */
@@ -800,7 +800,7 @@
 <header class="hero">
   <div class="container">
     <div class="hero-eyebrow">Deep Study Guide / April 2026</div>
-    <h1>How Anthropic Engineers<br><span>Build Software</span><span class="cursor">_</span></h1>
+    <h1>How Anthropic Engineers<br><span>Build </span><span class="hero-word">Software</span><span class="cursor">_</span></h1>
     <p class="hero-subtitle">
       A research-backed deep study on Anthropic's development workflows, agent harness design,
       infrastructure, interpretability research, and AI-first engineering culture &mdash; with 100+ official references.
@@ -2302,7 +2302,7 @@ Markdown instructions here...
   /* ======= THEME SWITCHER ======= */
   (function() {
     const root = document.documentElement;
-    let current = localStorage.getItem('theme') || 'dark';
+    let current = localStorage.getItem('theme') || 'terminal';
     // Track which non-terminal theme was last used
     let lastBase = (current === 'terminal')
       ? (localStorage.getItem('themeBase') || 'dark')
@@ -2351,6 +2351,34 @@ Markdown instructions here...
         }
       }
       tick();
+    })();
+
+    // Hero word typewriter: erases and retypes "Software" variants (terminal only)
+    (function heroWordCycle() {
+      const el = document.querySelector('.hero-word');
+      const words = ['Software', 'Agents', 'the Future', 'with Claude', 'Software'];
+      let wi = 0, ci = words[0].length, erasing = true, paused = false;
+      function isTerminal() {
+        return document.documentElement.getAttribute('data-theme') === 'terminal';
+      }
+      function tick() {
+        if (!isTerminal()) { el.textContent = 'Software'; setTimeout(tick, 500); return; }
+        const word = words[wi];
+        if (paused) { paused = false; erasing = true; setTimeout(tick, 80); return; }
+        if (erasing) {
+          ci--;
+          el.textContent = word.slice(0, ci);
+          if (ci > 0) { setTimeout(tick, 60); }
+          else { erasing = false; wi = (wi + 1) % words.length; setTimeout(tick, 400); }
+        } else {
+          const next = words[wi];
+          ci++;
+          el.textContent = next.slice(0, ci);
+          if (ci < next.length) { setTimeout(tick, 100); }
+          else { paused = true; setTimeout(tick, 3000); }
+        }
+      }
+      setTimeout(tick, 4000);
     })();
   })();
 

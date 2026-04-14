@@ -797,6 +797,11 @@
       .card { padding: 1.2rem; }
       .quote { padding: 0.8rem 1rem; }
     }
+    /* ======= INLINE CITATIONS ======= */
+    .cite { font-size: 0.7em; vertical-align: super; line-height: 0; font-weight: 500; margin-left: 1px; }
+    .cite a { color: var(--accent); text-decoration: none; opacity: 0.7; transition: opacity 0.2s; }
+    .cite a:hover { opacity: 1; text-decoration: underline; }
+
     /* ======= PASSWORD GATE ======= */
     .password-gate {
       position: fixed;
@@ -1033,7 +1038,7 @@
       <div class="principle-num">1</div>
       <div>
         <h3>Do the simple thing first</h3>
-        <p>Context compaction is just asking Claude to summarize previous messages. The CLAUDE.md memory system is "the simplest thing that could work &mdash; it's a file that has some stuff." They abandoned vector-based RAG search (with Voyage embeddings) in favor of agentic search using <code>grep</code> and <code>glob</code>, which outperformed RAG "by a lot." Boris Cherny created ~20 distinct prototypes in two days for the todo list feature alone, preferring rapid iteration over upfront architecture.</p>
+        <p>Context compaction is just asking Claude to summarize previous messages. The CLAUDE.md memory system is "the simplest thing that could work &mdash; it's a file that has some stuff." They abandoned vector-based RAG search (with Voyage embeddings) in favor of agentic search using <code>grep</code> and <code>glob</code>, which outperformed RAG "by a lot."<sup class="cite"><a href="https://www.latent.space/p/claude-code" target="_blank">Latent Space</a></sup> Boris Cherny created ~20 distinct prototypes in two days for the todo list feature alone, preferring rapid iteration over upfront architecture.<sup class="cite"><a href="https://www.lennysnewsletter.com/p/head-of-claude-code-what-happens" target="_blank">Lenny's Pod</a></sup></p>
       </div>
     </div>
 
@@ -1041,7 +1046,7 @@
       <div class="principle-num">2</div>
       <div>
         <h3>Minimal scaffolding, maximum model</h3>
-        <p>The SWE-bench agent that scored 49% uses only two tools: a Bash tool (persistent state, no internet) and an Edit tool (str_replace, view, create, insert, undo). No framework. No RAG. No planning module. The team actively removes tools &mdash; they unshipped <code>ls</code> once bash enforcement was robust. Cat Wu: <strong>"Everything you can do, Claude can do. There's nothing in between."</strong> The foundational paper states: "Start by using LLM APIs directly: many patterns can be implemented in a few lines of code."</p>
+        <p>The SWE-bench agent that scored 49% uses only two tools: a Bash tool (persistent state, no internet) and an Edit tool (str_replace, view, create, insert, undo).<sup class="cite"><a href="https://www.anthropic.com/engineering/swe-bench-sonnet" target="_blank">SWE-bench</a></sup> No framework. No RAG. No planning module. The team actively removes tools &mdash; they unshipped <code>ls</code> once bash enforcement was robust. Cat Wu: <strong>"Everything you can do, Claude can do. There's nothing in between."</strong><sup class="cite"><a href="https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf" target="_blank">Teams PDF</a></sup> The foundational paper states: "Start by using LLM APIs directly: many patterns can be implemented in a few lines of code."<sup class="cite"><a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">Building Agents</a></sup></p>
       </div>
     </div>
 
@@ -1049,7 +1054,7 @@
       <div class="principle-num">3</div>
       <div>
         <h3>Tool design over prompt engineering</h3>
-        <p>From the SWE-bench work: <strong>"Much more attention should go into designing tool interfaces for models."</strong> The team spent more time optimizing tool interfaces than the overall prompt. Tools are the contract between human intent and model capability. This is why Claude Code's <code>Edit</code> tool enforces exact string matching (not line numbers) and the <code>Bash</code> tool maintains persistent state &mdash; each design choice encodes an assumption about reliable model interaction.</p>
+        <p>From the SWE-bench work: <strong>"Much more attention should go into designing tool interfaces for models."</strong><sup class="cite"><a href="https://www.anthropic.com/engineering/swe-bench-sonnet" target="_blank">SWE-bench</a></sup> The team spent more time optimizing tool interfaces than the overall prompt. Tools are the contract between human intent and model capability. This is why Claude Code's <code>Edit</code> tool enforces exact string matching (not line numbers) and the <code>Bash</code> tool maintains persistent state &mdash; each design choice encodes an assumption about reliable model interaction.</p>
       </div>
     </div>
 
@@ -1057,7 +1062,7 @@
       <div class="principle-num">4</div>
       <div>
         <h3>Separate generation from evaluation</h3>
-        <p>From harness design research: <strong>"Agents tend to respond by confidently praising the work &mdash; even when, to a human observer, the quality is obviously mediocre."</strong> Never let the same agent generate and evaluate its own work. The three-agent harness (Planner, Generator, Evaluator) exists specifically for this reason. The Evaluator actively runs the application, not just reads the code.</p>
+        <p>From harness design research: <strong>"Agents tend to respond by confidently praising the work &mdash; even when, to a human observer, the quality is obviously mediocre."</strong><sup class="cite"><a href="https://www.anthropic.com/engineering/harness-design-long-running-apps" target="_blank">Harness Design</a></sup> Never let the same agent generate and evaluate its own work. The three-agent harness (Planner, Generator, Evaluator) exists specifically for this reason. The Evaluator actively runs the application, not just reads the code.</p>
       </div>
     </div>
 
@@ -1065,7 +1070,7 @@
       <div class="principle-num">5</div>
       <div>
         <h3>Underfund teams, unlimited tokens</h3>
-        <p>Boris Cherny advocates providing small teams with unlimited API access rather than large headcount. Claude Code started with one engineer (Boris), grew to ~10. The team ships 60-100 internal npm releases per day. This forces prioritization: the model does the heavy lifting, humans guide direction. Individual engineers average 5 PRs/day; Boris routinely ships 10-30 PRs/day.</p>
+        <p>Boris Cherny advocates providing small teams with unlimited API access rather than large headcount. Claude Code started with one engineer (Boris), grew to ~10. The team ships 60-100 internal npm releases per day. This forces prioritization: the model does the heavy lifting, humans guide direction. Individual engineers average 5 PRs/day; Boris routinely ships 10-30 PRs/day.<sup class="cite"><a href="https://www.lennysnewsletter.com/p/head-of-claude-code-what-happens" target="_blank">Lenny's Pod</a></sup> <sup class="cite"><a href="https://newsletter.pragmaticengineer.com/p/how-claude-code-is-built" target="_blank">Pragmatic Eng</a></sup></p>
       </div>
     </div>
 
@@ -1073,12 +1078,12 @@
       <div class="principle-num">6</div>
       <div>
         <h3>Every component encodes an assumption</h3>
-        <p>From "Harness design for long-running application development": <strong>"Every component in a harness encodes an assumption about what the model can't do on its own."</strong> If the model can do it, remove the component. If it can't, make the harness handle it. This is why harness design evolves with model capabilities &mdash; what required scaffolding with Claude 3 may be unnecessary with Claude 4.</p>
+        <p>From "Harness design for long-running application development": <strong>"Every component in a harness encodes an assumption about what the model can't do on its own."</strong><sup class="cite"><a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank">Effective Harnesses</a></sup> If the model can do it, remove the component. If it can't, make the harness handle it. This is why harness design evolves with model capabilities &mdash; what required scaffolding with Claude 3 may be unnecessary with Claude 4.</p>
       </div>
     </div>
 
     <div class="quote">
-      <p>"Maybe you don't actually need an IDE."</p>
+      <p>"Maybe you don't actually need an IDE."<sup class="cite"><a href="https://www.lennysnewsletter.com/p/head-of-claude-code-what-happens" target="_blank">Lenny's Pod</a></sup></p>
       <cite>&mdash; Boris Cherny, Head of Claude Code</cite>
     </div>
   </div>
@@ -1099,7 +1104,7 @@
       <div class="card">
         <span class="tag tag-blue">Language</span>
         <h3>TypeScript</h3>
-        <p>"TypeScript and React are two technologies the model is very capable with, so were a logical choice." ~90% of the codebase is AI-authored. Boris hasn't edited a line by hand since November 2025.</p>
+        <p>"TypeScript and React are two technologies the model is very capable with, so were a logical choice."<sup class="cite"><a href="https://newsletter.pragmaticengineer.com/p/how-claude-code-is-built" target="_blank">Pragmatic Eng</a></sup> ~90% of the codebase is AI-authored.<sup class="cite"><a href="https://fortune.com/2026/01/29/100-percent-of-code-at-anthropic-and-openai-is-now-ai-written-boris-cherny-roon/" target="_blank">Fortune</a></sup> Boris hasn't edited a line by hand since November 2025.<sup class="cite"><a href="https://x.com/bcherny/status/2007179832300581177" target="_blank">Boris/X</a></sup></p>
       </div>
       <div class="card">
         <span class="tag tag-green">UI Framework</span>
@@ -1109,7 +1114,7 @@
       <div class="card">
         <span class="tag tag-purple">Build & Distribution</span>
         <h3>Bun + npm</h3>
-        <p>Bun for building/bundling. npm for distribution. 60-100 internal npm releases per day. ~1 external release per day. 74 public releases in 52 days (Feb 1 &ndash; Mar 24, 2026). Four teams ship in parallel independently.</p>
+        <p>Bun for building/bundling. npm for distribution. 60-100 internal npm releases per day. ~1 external release per day. 74 public releases in 52 days (Feb 1 &ndash; Mar 24, 2026).<sup class="cite"><a href="https://newsletter.pragmaticengineer.com/p/how-claude-code-is-built" target="_blank">Pragmatic Eng</a></sup> Four teams ship in parallel independently.</p>
       </div>
       <div class="card">
         <span class="tag tag-yellow">CLI Framework</span>
@@ -1119,18 +1124,18 @@
       <div class="card">
         <span class="tag tag-red">Agent Core: 2 Tools</span>
         <h3>Bash + Edit</h3>
-        <p>The SWE-bench agent (49% score) uses only: <strong>Bash</strong> (executes commands, persistent state across calls, no internet) and <strong>Edit</strong> (str_replace with exact string matching, enforced absolute paths, undo_edit). The model determines step sequencing freely.</p>
+        <p>The SWE-bench agent (49% score) uses only: <strong>Bash</strong> (executes commands, persistent state across calls, no internet) and <strong>Edit</strong> (str_replace with exact string matching, enforced absolute paths, undo_edit). The model determines step sequencing freely.<sup class="cite"><a href="https://www.anthropic.com/engineering/swe-bench-sonnet" target="_blank">SWE-bench</a></sup></p>
       </div>
       <div class="card">
         <span class="tag tag-accent">Remote Dev</span>
         <h3>Coder control plane</h3>
-        <p>Anthropic uses <a href="https://coder.com" target="_blank">Coder</a> for remote dev environments. Jacqueline Lee (MTS): "I have been focusing on remote development, majorly leveraging Coder as the control plane." Agents run in background &mdash; close your laptop and work continues.</p>
+        <p>Anthropic uses <a href="https://coder.com" target="_blank">Coder</a> for remote dev environments. Jacqueline Lee (MTS): "I have been focusing on remote development, majorly leveraging Coder as the control plane."<sup class="cite"><a href="https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf" target="_blank">Teams PDF</a></sup> Agents run in background &mdash; close your laptop and work continues.</p>
       </div>
     </div>
 
     <div class="subsection">
       <h3>Origin story</h3>
-      <p style="color: var(--text-secondary);">Claude Code originated from a command-line tool Boris Cherny built to state what music an engineer was listening to. After giving it filesystem access, it "spread like wildfire at Anthropic." Boris joined Anthropic in September 2024 and began prototyping with Claude 3.6. He created the first working prototype in days. Sid Bidasaria joined as engineer #2. The team grew to ~10 engineers, now includes PMs, designers, data scientists. An Anthropic spokesperson clarified: company-wide, between 70% and 90% of code is AI-authored.</p>
+      <p style="color: var(--text-secondary);">Claude Code originated from a command-line tool Boris Cherny built to state what music an engineer was listening to. After giving it filesystem access, it "spread like wildfire at Anthropic."<sup class="cite"><a href="https://www.lennysnewsletter.com/p/head-of-claude-code-what-happens" target="_blank">Lenny's Pod</a></sup> Boris joined Anthropic in September 2024 and began prototyping with Claude 3.6. He created the first working prototype in days. Sid Bidasaria joined as engineer #2. The team grew to ~10 engineers, now includes PMs, designers, data scientists. An Anthropic spokesperson clarified: company-wide, between 70% and 90% of code is AI-authored.<sup class="cite"><a href="https://fortune.com/2026/01/29/100-percent-of-code-at-anthropic-and-openai-is-now-ai-written-boris-cherny-roon/" target="_blank">Fortune</a></sup></p>
     </div>
   </div>
 </section>
@@ -1165,7 +1170,7 @@
         <span class="workflow-arrow">&rarr;</span>
         <span class="workflow-step">Commit</span>
       </div>
-      <p>The Product Development team uses auto-accept mode where Claude writes code, runs tests, and iterates autonomously. Claude verifies its own work by running builds, tests, and lints. The engineer reviews the ~80% complete solution. ~70% of final implementation comes from Claude's autonomous work. <strong>Critical:</strong> always start from a clean git state and commit checkpoints regularly so you can roll back.</p>
+      <p>The Product Development team uses auto-accept mode where Claude writes code, runs tests, and iterates autonomously. Claude verifies its own work by running builds, tests, and lints. The engineer reviews the ~80% complete solution. ~70% of final implementation comes from Claude's autonomous work.<sup class="cite"><a href="https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf" target="_blank">Teams PDF</a></sup> <strong>Critical:</strong> always start from a clean git state and commit checkpoints regularly so you can roll back.</p>
       <p style="margin-top: 0.8rem;"><strong>Task classification intuition:</strong> peripheral features run async (let Claude go fully autonomous), core business logic runs synchronous (human stays in the loop). Developing this intuition is key to the workflow.</p>
     </div>
 
@@ -1173,7 +1178,7 @@
       <div class="card">
         <span class="tag tag-blue">High Volume</span>
         <h3>The slot machine</h3>
-        <p>Used by Data Science and ML Engineering. Commit state, let Claude run 30 minutes, accept or restart fresh. Starting over often has higher success rate than debugging a broken attempt. Build permanent React dashboards (5,000+ lines of TypeScript) instead of throwaway Jupyter notebooks &mdash; despite "knowing very little JavaScript."</p>
+        <p>Used by Data Science and ML Engineering. Commit state, let Claude run 30 minutes, accept or restart fresh. Starting over often has higher success rate than debugging a broken attempt. Build permanent React dashboards (5,000+ lines of TypeScript) instead of throwaway Jupyter notebooks &mdash; despite "knowing very little JavaScript."<sup class="cite"><a href="https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf" target="_blank">Teams PDF</a></sup></p>
         <div class="quote">
           <p>"Treat it like a slot machine &mdash; starting over often has higher success rate than fixing."</p>
           <cite>&mdash; Anthropic Data Science Team</cite>
@@ -1182,7 +1187,7 @@
       <div class="card">
         <span class="tag tag-purple">Methodical</span>
         <h3>TDD with Claude</h3>
-        <p>Used by Security Engineering. Write pseudocode first, guide Claude through test-driven development. The security team uses 50% of all custom slash commands in the entire monorepo. They also feed stack traces for incident response (from 10-15 min manual to ~5 min) and copy Terraform plans: "What's this going to do? Am I going to regret this?"</p>
+        <p>Used by Security Engineering. Write pseudocode first, guide Claude through test-driven development. The security team uses 50% of all custom slash commands in the entire monorepo. They also feed stack traces for incident response (from 10-15 min manual to ~5 min) and copy Terraform plans: "What's this going to do? Am I going to regret this?"<sup class="cite"><a href="https://www-cdn.anthropic.com/58284b19e702b49db9302d5b6f135ad8871e7658.pdf" target="_blank">Teams PDF</a></sup></p>
         <div class="quote">
           <p>"Let Claude talk first. Tell it to commit as it goes."</p>
           <cite>&mdash; Anthropic Security Team</cite>
@@ -1219,7 +1224,7 @@
         <div class="card">
           <span class="tag tag-yellow">Pattern 4</span>
           <h3>Orchestrator-workers</h3>
-          <p>A lead agent (Opus) dynamically breaks tasks and delegates to parallel worker agents (Sonnet). Outperformed single-agent by 90.2%. Token usage explains 80% of variance in quality.</p>
+          <p>A lead agent (Opus) dynamically breaks tasks and delegates to parallel worker agents (Sonnet). Outperformed single-agent by 90.2%.<sup class="cite"><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank">Multi-Agent Research</a></sup> Token usage explains 80% of variance in quality.</p>
         </div>
         <div class="card">
           <span class="tag tag-red">Pattern 5</span>
@@ -1244,7 +1249,7 @@
         <span class="workflow-arrow">&rarr;</span>
         <span class="workflow-step">Merge upstream</span>
       </div>
-      <p>For code migrations and large features, engineers use 10+ parallel Claude agents in a map-reduce pattern. Each agent in its own Docker container or git worktree. Coordination via shared upstream git repo with a <code>current_tasks/</code> directory for locking. Slash commands like <code>/pr_commit</code>, <code>/feature_dev</code>, <code>/code_review</code> standardize common operations. Average user cost: ~$6/day.</p>
+      <p>For code migrations and large features, engineers use 10+ parallel Claude agents in a map-reduce pattern. Each agent in its own Docker container or git worktree. Coordination via shared upstream git repo with a <code>current_tasks/</code> directory for locking. Slash commands like <code>/pr_commit</code>, <code>/feature_dev</code>, <code>/code_review</code> standardize common operations. Average user cost: ~$6/day.<sup class="cite"><a href="https://newsletter.pragmaticengineer.com/p/how-claude-code-is-built" target="_blank">Pragmatic Eng</a></sup></p>
     </div>
   </div>
 </section>
@@ -1290,7 +1295,7 @@
 
   <span class="dim">// Why: without this, agents "solve" failing tests by deleting them</span>
       </div>
-      <p style="color: var(--text-secondary); font-size: 0.93rem;">The key insight is filesystem-based state. Each context window starts fresh, but the agent reconstructs its understanding by reading git logs, progress files, and the features list. This eliminates context window limits as a constraint on project size.</p>
+      <p style="color: var(--text-secondary); font-size: 0.93rem;">The key insight is filesystem-based state. Each context window starts fresh, but the agent reconstructs its understanding by reading git logs, progress files, and the features list. This eliminates context window limits as a constraint on project size.<sup class="cite"><a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank">Effective Harnesses</a></sup></p>
     </div>
 
     <!-- Three-Agent -->
@@ -1389,10 +1394,10 @@
         </tbody>
       </table>
       <div class="quote" style="margin-top: 1rem;">
-        <p>"Anytime we see Claude do something incorrectly we add it to the CLAUDE.md. During code review, we tag @.claude on PRs to add learnings directly &mdash; Compounding Engineering."</p>
+        <p>"Anytime we see Claude do something incorrectly we add it to the CLAUDE.md. During code review, we tag @.claude on PRs to add learnings directly &mdash; Compounding Engineering."<sup class="cite"><a href="https://www.lennysnewsletter.com/p/head-of-claude-code-what-happens" target="_blank">Lenny's Pod</a></sup></p>
         <cite>&mdash; Boris Cherny</cite>
       </div>
-      <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.93rem;"><strong>Best practices:</strong> Target under 200 lines per file. Use <code>@path/to/import</code> to import files (max 5 hops). Run <code>/init</code> to auto-generate. HTML comments are stripped before injection to save tokens. "Claude is eerily good at writing rules for itself."</p>
+      <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.93rem;"><strong>Best practices:</strong> Target under 200 lines per file. Use <code>@path/to/import</code> to import files (max 5 hops). Run <code>/init</code> to auto-generate. HTML comments are stripped before injection to save tokens. "Claude is eerily good at writing rules for itself."<sup class="cite"><a href="https://www.lennysnewsletter.com/p/head-of-claude-code-what-happens" target="_blank">Lenny's Pod</a></sup></p>
     </div>
 
     <!-- Auto Memory -->
@@ -1435,7 +1440,7 @@
         </div>
       </div>
       <p style="color: var(--text-secondary); font-size: 0.93rem; margin-top: 1rem;"><strong>Exit codes:</strong> 0 = success (parses stdout JSON), 2 = <strong>blocks the action</strong>, other = non-blocking error. Matchers use regex. The <code>if</code> field uses permission rule syntax (e.g., <code>Bash(git *)</code>, <code>Edit(*.ts)</code>).</p>
-      <p style="color: var(--text-secondary); font-size: 0.93rem; margin-top: 0.5rem;"><strong>Anthropic's actual hook config:</strong> PostToolUse on Write|Edit runs <code>bun run format || true</code> &mdash; auto-formatting every file Claude touches.</p>
+      <p style="color: var(--text-secondary); font-size: 0.93rem; margin-top: 0.5rem;"><strong>Anthropic's actual hook config:</strong> PostToolUse on Write|Edit runs <code>bun run format || true</code> &mdash; auto-formatting every file Claude touches.<sup class="cite"><a href="https://newsletter.pragmaticengineer.com/p/how-claude-code-is-built" target="_blank">Pragmatic Eng</a></sup></p>
     </div>
 
     <!-- Skills -->
@@ -1482,7 +1487,7 @@ Markdown instructions here...
           <li>Maintains <strong>5-10 additional sessions</strong> on claude.ai/code</li>
           <li>Starts morning sessions from iPhone, resumes on desktop</li>
           <li>Shell aliases <code>za</code>, <code>zb</code>, <code>zc</code> for one-keystroke worktree navigation</li>
-          <li>Some team members have dedicated "analysis" worktrees for logs/BigQuery</li>
+          <li>Some team members have dedicated "analysis" worktrees for logs/BigQuery<sup class="cite"><a href="https://howborisusesclaudecode.com" target="_blank">Boris Site</a></sup></li>
         </ul>
       </div>
       <div class="card">
@@ -1491,7 +1496,7 @@ Markdown instructions here...
           <li>Exclusively uses <strong>Opus 4.5 with thinking mode</strong>: "It's the best coding model I've ever used"</li>
           <li>Uses <code>/effort max</code> for complex debugging and architecture</li>
           <li>Hasn't edited a line of code by hand since November 2025</li>
-          <li>Ships <strong>10-30 PRs per day</strong></li>
+          <li>Ships <strong>10-30 PRs per day</strong><sup class="cite"><a href="https://x.com/bcherny/status/2007179832300581177" target="_blank">Boris/X</a></sup></li>
           <li>Created ~20 prototypes in two days for the todo list feature alone</li>
         </ul>
       </div>
@@ -1499,7 +1504,7 @@ Markdown instructions here...
 
     <div class="card" style="margin-top: 1.5rem;">
       <h3>Code review revolution at Anthropic</h3>
-      <p>Code output per engineer <strong>up 200%</strong>, making reviews the bottleneck. Solution: <strong>multi-agent code review</strong>. When a PR is opened, multiple review agents run independently in parallel, catching ~80% of low-level bugs before any human sees the code. Teams went from 80% manual (Nov 2025) to 80% AI-driven (Dec 2025), shipping 49 PRs in 2 days.</p>
+      <p>Code output per engineer <strong>up 200%</strong>, making reviews the bottleneck. Solution: <strong>multi-agent code review</strong>. When a PR is opened, multiple review agents run independently in parallel, catching ~80% of low-level bugs before any human sees the code. Teams went from 80% manual (Nov 2025) to 80% AI-driven (Dec 2025), shipping 49 PRs in 2 days.<sup class="cite"><a href="https://newsletter.pragmaticengineer.com/p/how-claude-code-is-built" target="_blank">Pragmatic Eng</a></sup></p>
       <div class="quote">
         <p>"Give Claude a way to verify its work. If Claude has that feedback loop, it will 2-3x the quality of the final result."</p>
         <cite>&mdash; Boris Cherny, #1 Tip</cite>
@@ -1544,7 +1549,7 @@ Markdown instructions here...
 
     <div class="subsection">
       <h3>The "think" tool</h3>
-      <p style="color: var(--text-secondary);">Creates a designated space for Claude to pause during response generation for structured reasoning. Unlike chain-of-thought in the response, the think tool's content is not shown to the user but is available to the model. Results: <strong>54% improvement</strong> in complex airline customer service tasks; <strong>1.6% improvement</strong> on SWE-bench (p &lt; .001). Most effective in multi-step tool use where the model must plan across several operations.</p>
+      <p style="color: var(--text-secondary);">Creates a designated space for Claude to pause during response generation for structured reasoning. Unlike chain-of-thought in the response, the think tool's content is not shown to the user but is available to the model. Results: <strong>54% improvement</strong> in complex airline customer service tasks; <strong>1.6% improvement</strong> on SWE-bench (p &lt; .001).<sup class="cite"><a href="https://www.anthropic.com/engineering/claude-think-tool" target="_blank">Think Tool</a></sup> Most effective in multi-step tool use where the model must plan across several operations.</p>
     </div>
 
     <div class="subsection">
@@ -1635,7 +1640,7 @@ Markdown instructions here...
         <h3>Practical eval design</h3>
         <ul class="checklist">
           <li><strong>Start small</strong>: 20-50 tasks from actual user failures, not hundreds of synthetic cases.</li>
-          <li><strong>Infrastructure noise is real</strong>: Anthropic measured a <strong>6 percentage point difference</strong> on Terminal-Bench 2.0 from infrastructure noise alone.</li>
+          <li><strong>Infrastructure noise is real</strong>: Anthropic measured a <strong>6 percentage point difference</strong> on Terminal-Bench 2.0 from infrastructure noise alone.<sup class="cite"><a href="https://www.anthropic.com/engineering/infrastructure-noise" target="_blank">Infra Noise</a></sup></li>
           <li><strong>3x resource ceiling</strong>: Eval environments need 3x the resources of the task to balance stability vs. difficulty.</li>
           <li><strong>Eval awareness</strong>: Models may behave differently when they detect they're being evaluated (documented in BrowseComp research).</li>
           <li><strong>AI-resistant evals</strong>: Design evaluations that remain meaningful as model capabilities increase.</li>
@@ -1645,7 +1650,7 @@ Markdown instructions here...
 
     <div class="card" style="margin-top: 1.5rem;">
       <h3>The postmortem lesson</h3>
-      <p>In September 2025, three production bugs revealed critical evaluation gaps: (1) context window routing errors affected 30% of Claude Code users, (2) TPU misconfiguration caused output corruption, (3) an XLA:TPU compiler bug was triggered by code deployment. The key finding: <strong>"evaluations simply didn't capture the degradation users were reporting."</strong> Privacy controls limited engineer access to user interactions. Systemic changes: more sensitive evaluations, continuous production monitoring, <code>/bug</code> command and thumbs-down buttons for direct user feedback.</p>
+      <p>In September 2025, three production bugs revealed critical evaluation gaps: (1) context window routing errors affected 30% of Claude Code users, (2) TPU misconfiguration caused output corruption, (3) an XLA:TPU compiler bug was triggered by code deployment. The key finding: <strong>"evaluations simply didn't capture the degradation users were reporting."</strong><sup class="cite"><a href="https://www.anthropic.com/engineering/a-postmortem-of-three-recent-issues" target="_blank">Postmortem</a></sup> Privacy controls limited engineer access to user interactions. Systemic changes: more sensitive evaluations, continuous production monitoring, <code>/bug</code> command and thumbs-down buttons for direct user feedback.</p>
     </div>
   </div>
 </section>
@@ -1754,7 +1759,7 @@ Markdown instructions here...
     <!-- Internal research data -->
     <div class="card" style="margin-top: 1.5rem;">
       <h3>Internal research: AI transforming work at Anthropic</h3>
-      <p>In August 2025, Anthropic surveyed <strong>132 engineers and researchers</strong>, conducted <strong>53 in-depth qualitative interviews</strong>, and analyzed <strong>200,000 internal Claude Code transcripts</strong> (Feb-Aug 2025).</p>
+      <p>In August 2025, Anthropic surveyed <strong>132 engineers and researchers</strong>, conducted <strong>53 in-depth qualitative interviews</strong>, and analyzed <strong>200,000 internal Claude Code transcripts</strong> (Feb-Aug 2025).<sup class="cite"><a href="https://www.anthropic.com/research/how-ai-is-transforming-work-at-anthropic" target="_blank">AI @ Anthropic</a></sup></p>
       <div class="two-col" style="margin-top: 1rem;">
         <ul class="checklist">
           <li>AI usage in daily work: <strong>28% &rarr; 59%</strong> (one year)</li>
@@ -1998,7 +2003,7 @@ Markdown instructions here...
       <div class="card">
         <span class="tag tag-green">Orchestration</span>
         <h3>Amazon EKS Ultra scale</h3>
-        <p><strong>&gt;99% of compute on Amazon EKS</strong>. Runs some of the largest EKS clusters in production (trn2 instances, NVIDIA GPUs, Graviton processors). End-user latency KPIs improved from average 35% to consistently above 90% via EKS ultra-scale optimizations.</p>
+        <p><strong>&gt;99% of compute on Amazon EKS</strong>. Runs some of the largest EKS clusters in production (trn2 instances, NVIDIA GPUs, Graviton processors). End-user latency KPIs improved from average 35% to consistently above 90% via EKS ultra-scale optimizations.<sup class="cite"><a href="https://aws.amazon.com/blogs/containers/under-the-hood-amazon-eks-ultra-scale-clusters/" target="_blank">AWS Blog</a></sup></p>
       </div>
       <div class="card">
         <span class="tag tag-purple">Deployment</span>
@@ -2008,7 +2013,7 @@ Markdown instructions here...
       <div class="card">
         <span class="tag tag-red">Security</span>
         <h3>Sandboxing</h3>
-        <p>Two isolation mechanisms: <strong>filesystem isolation</strong> (Linux bubblewrap, macOS seatbelt) and <strong>network isolation</strong> (Unix domain socket proxy enforcing domain restrictions). Reduced permission prompts by 84% internally. Claude Code on web: isolated sandboxes with scoped git credentials outside the sandbox.</p>
+        <p>Two isolation mechanisms: <strong>filesystem isolation</strong> (Linux bubblewrap, macOS seatbelt) and <strong>network isolation</strong> (Unix domain socket proxy enforcing domain restrictions). Reduced permission prompts by 84% internally.<sup class="cite"><a href="https://www.anthropic.com/engineering/claude-code-sandboxing" target="_blank">Sandboxing</a></sup> Claude Code on web: isolated sandboxes with scoped git credentials outside the sandbox.</p>
       </div>
       <div class="card">
         <span class="tag tag-yellow">Confidential</span>
